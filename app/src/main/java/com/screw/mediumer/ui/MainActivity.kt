@@ -1,7 +1,8 @@
-package com.screw.mediumer
+package com.screw.mediumer.ui
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.screw.mediumer.R
 
 class MainActivity : AppCompatActivity() {
 
