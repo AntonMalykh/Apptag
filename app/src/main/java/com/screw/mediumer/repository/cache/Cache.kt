@@ -1,4 +1,6 @@
 package com.screw.mediumer.repository.cache
 
-interface Cache{
+import com.screw.mediumer.repository.Repository
+
+interface Cache : Repository{
 }

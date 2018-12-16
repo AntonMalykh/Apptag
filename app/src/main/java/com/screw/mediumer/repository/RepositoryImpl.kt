@@ -1,5 +1,5 @@
 package com.screw.mediumer.repository
 
-class RepositoryImpl : Repository {
+internal class RepositoryImpl : Repository {
 
 }
