@@ -24,12 +24,12 @@ internal class ClarifaiTagService : TagService {
                 .buildSync()
     }
 
-    override fun getImageTags(imageBytes: ByteArray, resultHandler: Observer<ImageTagResult>) {
+    override fun getImageTags(imageBytes: ByteArray, consumer: Observer<ImageTagResult>) {
         client.defaultModels.generalModel().predict()
                 .withInputs(ClarifaiInput.forImage(imageBytes))
                 .executeAsync {
                     mainHandler.post {
-                        resultHandler.onChanged(ImageTagResult.success(responseToTagList(it)))
+                        consumer.onChanged(ImageTagResult.success(responseToTagList(it)))
                     }
                 }
     }

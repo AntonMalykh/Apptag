@@ -4,5 +4,5 @@ import androidx.lifecycle.Observer
 import com.cleverapp.repository.data.ImageTagResult
 
 interface TagService {
-    fun getImageTags(imageBytes: ByteArray, resultHandler: Observer<ImageTagResult>)
+    fun getImageTags(imageBytes: ByteArray, consumer: Observer<ImageTagResult>)
 }
