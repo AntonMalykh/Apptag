@@ -1,4 +1,4 @@
-package com.screw.mediumer
+package com.cleverapp
 
 import org.junit.Test
 

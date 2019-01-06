@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">Mediumer</string>
+    <string name="app_name">Apptag</string>
+
+    <string name="image_chooser_title">Select Image</string>
 </resources>
