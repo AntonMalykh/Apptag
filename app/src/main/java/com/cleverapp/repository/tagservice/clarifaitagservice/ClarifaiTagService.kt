@@ -1,14 +1,15 @@
 package com.cleverapp.repository.tagservice.clarifaitagservice
 
-import android.net.Uri
+import android.os.Handler
+import android.os.Looper
+import androidx.lifecycle.Observer
 import clarifai2.api.ClarifaiBuilder
 import clarifai2.api.ClarifaiClient
-import clarifai2.api.ClarifaiResponse
 import clarifai2.dto.input.ClarifaiInput
 import clarifai2.dto.model.output.ClarifaiOutput
 import clarifai2.dto.prediction.Concept
+import com.cleverapp.repository.data.ImageTagResult
 import com.cleverapp.repository.tagservice.TagService
-import java.io.File
 
 internal class ClarifaiTagService : TagService {
 
@@ -16,14 +17,29 @@ internal class ClarifaiTagService : TagService {
 
     private var client: ClarifaiClient
 
+    private val mainHandler: Handler = Handler(Looper.getMainLooper())
+
     init{
         client = ClarifaiBuilder(CLARIFAI_API_KEY)
                 .buildSync()
     }
 
-    override fun getTags(fileUri: Uri): ClarifaiResponse<MutableList<ClarifaiOutput<Concept>>> {
-        return client.defaultModels.generalModel().predict()
-                .withInputs(ClarifaiInput.forImage(File(fileUri.path)))
-                .executeSync();
+    override fun getImageTags(imageBytes: ByteArray, resultHandler: Observer<ImageTagResult>) {
+        client.defaultModels.generalModel().predict()
+                .withInputs(ClarifaiInput.forImage(imageBytes))
+                .executeAsync {
+                    mainHandler.post {
+                        resultHandler.onChanged(ImageTagResult.success(responseToTagList(it)))
+                    }
+                }
+    }
+
+    private fun responseToTagList(responseResult: List<ClarifaiOutput<Concept>>): List<String> {
+        val data = responseResult[0].data()
+        return data.fold(ArrayList(data.size)){
+            acc, concept ->
+                acc.add(concept.name()!!)
+                acc
+        }
     }
 }

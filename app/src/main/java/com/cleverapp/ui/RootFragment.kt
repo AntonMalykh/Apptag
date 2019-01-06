@@ -6,8 +6,13 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.appcompat.widget.AppCompatImageView
+import androidx.appcompat.widget.AppCompatTextView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
@@ -25,12 +30,17 @@ class RootFragment : BaseFragment() {
 
     private lateinit var fab : FloatingActionButton
     private lateinit var preview : AppCompatImageView
+    private lateinit var progress : ProgressBar
+    private lateinit var tags : AppCompatTextView
 
     private lateinit var viewModel : RootViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel = ViewModelProviders.of(this, ViewModelFactory(tagService)).get(RootViewModel::class.java)
+        viewModel = ViewModelProviders.of(
+                this,
+                ViewModelFactory(repository))
+                    .get(RootViewModel::class.java)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -38,13 +48,43 @@ class RootFragment : BaseFragment() {
         val view = inflater.inflate(R.layout.root_fragment, container, false)
 
         preview = view.findViewById(R.id.preview)
+        progress = view.findViewById(R.id.progress)
+        tags = view.findViewById(R.id.tags)
         fab = view.findViewById(R.id.fab)
         fab.setOnClickListener { openFileChooser() }
 
+        progress.bringToFront()
+        tags.bringToFront()
+
+        observeData()
+        return view
+    }
+
+    private fun observeData() {
         viewModel.imagePath.observe(
                 this,
                 Observer { Glide.with(this).load(it).into(preview) })
-        return view
+        viewModel.isFetchingTags.observe(
+                this,
+                Observer {
+                    progress.visibility = if (it == true) VISIBLE else GONE
+                    tags.visibility = if (it == true) GONE else VISIBLE
+                })
+        viewModel.imageTagResult.observe(
+                this,
+                Observer {
+                    if(it.error != null)
+                        Toast.makeText(activity, it.error, Toast.LENGTH_SHORT).show()
+                    else
+                        tags.text = toUiString(it.tags)
+                })
+    }
+
+    private fun toUiString(tags: List<String>?): CharSequence? {
+        return tags?.fold(StringBuilder()){
+            acc, s ->
+                acc.append('#').append(s)
+        }
     }
 
     private fun openFileChooser() {

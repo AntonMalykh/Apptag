@@ -7,7 +7,7 @@ import com.cleverapp.R
 
 class MainActivity : AppCompatActivity() {
 
-    val tagService by lazy { (application as App).tagService }
+    val repository by lazy { (application as App).repository }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

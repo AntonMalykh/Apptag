@@ -1,10 +1,8 @@
 package com.cleverapp.repository.tagservice
 
-import android.net.Uri
-import clarifai2.api.ClarifaiResponse
-import clarifai2.dto.model.output.ClarifaiOutput
-import clarifai2.dto.prediction.Concept
+import androidx.lifecycle.Observer
+import com.cleverapp.repository.data.ImageTagResult
 
 interface TagService {
-    fun getTags(fileUri: Uri): ClarifaiResponse<MutableList<ClarifaiOutput<Concept>>>
+    fun getImageTags(imageBytes: ByteArray, resultHandler: Observer<ImageTagResult>)
 }

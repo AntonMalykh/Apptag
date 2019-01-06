@@ -2,13 +2,27 @@ package com.cleverapp.viewmodels
 
 import android.net.Uri
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
-import com.cleverapp.repository.tagservice.TagService
+import com.cleverapp.repository.Repository
+import com.cleverapp.repository.data.ImageTagResult
 
-class RootViewModel(val tagService: TagService): ViewModel() {
+class RootViewModel(private val repository: Repository): ViewModel() {
 
-    val imagePath: MutableLiveData<Uri> by lazy { MutableLiveData<Uri>() }
-    val isFetchingTags: MutableLiveData<Boolean> by lazy { MutableLiveData<Boolean>() }
+    private val imageTagResultObserver: Observer<ImageTagResult> =
+            Observer {
+                isFetchingTags.value = false
+                imageTagResult.value = it
+            }
+
+    val imagePath: MutableLiveData<Uri> = MutableLiveData()
+    val isFetchingTags: MutableLiveData<Boolean> = MutableLiveData()
+    val imageTagResult: MutableLiveData<ImageTagResult> = MutableLiveData()
+
+    init {
+        repository.setImageTagResultObserver(imageTagResultObserver)
+        isFetchingTags.postValue(false)
+    }
 
     fun updateUri(fileUri: Uri) {
         imagePath.value = fileUri
@@ -16,7 +30,11 @@ class RootViewModel(val tagService: TagService): ViewModel() {
 
     fun updateTags(fileUri: Uri) {
         isFetchingTags.value = true
-        val tags = tagService.getTags(fileUri).get()
-        isFetchingTags.value = false
+        repository.fetchImageTagsForImage(fileUri)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        repository.removeImageTagResultObserver()
     }
 }
