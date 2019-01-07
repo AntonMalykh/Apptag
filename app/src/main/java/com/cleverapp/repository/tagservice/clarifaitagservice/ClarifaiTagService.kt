@@ -13,7 +13,7 @@ import com.cleverapp.repository.tagservice.TagService
 
 internal class ClarifaiTagService : TagService {
 
-    private val CLARIFAI_API_KEY = "7838cc2605b54bb2a64956e469ca9099"
+    private val CLARIFAI_API_KEY = ""
 
     private var client: ClarifaiClient
 
