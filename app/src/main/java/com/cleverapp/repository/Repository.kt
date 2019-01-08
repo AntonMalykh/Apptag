@@ -1,14 +1,14 @@
 package com.cleverapp.repository
 
 import android.net.Uri
-import androidx.lifecycle.Observer
-import com.cleverapp.repository.data.ImageTagResult
+import androidx.lifecycle.LiveData
+import com.cleverapp.repository.data.TaggedImage
 
 interface Repository {
 
-    fun setImageTagResultObserver(observer: Observer<ImageTagResult>)
+    fun fetchTagsForImage(uri: Uri)
 
-    fun removeImageTagResultObserver()
+    fun getTagFetchingResultLiveData(): LiveData<TagFetchingResult>
 
-    fun fetchImageTagsForImage(uri: Uri)
+    fun getSavedImages(): List<TaggedImage>
 }

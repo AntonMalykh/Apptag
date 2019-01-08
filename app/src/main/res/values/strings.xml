@@ -2,4 +2,6 @@
     <string name="app_name">Apptag</string>
 
     <string name="image_chooser_title">Select Image</string>
+    <string name="remove">Remove</string>
+    <string name="copy_tags">Copy tags</string>
 </resources>

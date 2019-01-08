@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--Theme-->
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303f9f</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorAccent">#c3ffcf40</color>
+    <color name="accent_material_light">#f5b800</color>
+    <color name="primary_dark_material_light_light_status_bar">#c8c8c8</color>
+    <color name="accent_material_light_1">#ffcf40</color>
+    <color name="status_bar_color_yellow">#f3be00</color>
+
+
+    <color name="text_on_image_background">#a0e1e1e1</color>
+    <color name="primary_material_light">#eae9e9</color>
+    <color name="background_material_light">#e9e9e9</color>
 </resources>
