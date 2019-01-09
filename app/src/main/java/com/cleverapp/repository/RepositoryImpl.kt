@@ -56,6 +56,10 @@ class RepositoryImpl(
         return databaseHelper.getAllTaggedImages()
     }
 
+    override fun deleteSavedImage(image: TaggedImage) {
+        return databaseHelper.deleteSavedImage(image)
+    }
+
     private fun stringsToImageTags(imageId: String, strings: Collection<String>?): List<ImageTag> {
         if (strings == null)
             return emptyList()

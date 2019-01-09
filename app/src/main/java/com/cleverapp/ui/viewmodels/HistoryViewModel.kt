@@ -11,4 +11,9 @@ class HistoryViewModel(app: App): BaseViewModel(app) {
     fun updateHistory(){
         images.value = repository.getSavedImages()
     }
+
+    fun onRemoveClicked(image: TaggedImage) {
+        repository.deleteSavedImage(image)
+        updateHistory()
+    }
 }

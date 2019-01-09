@@ -1,9 +1,6 @@
 package com.cleverapp.repository.database
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 import com.cleverapp.repository.data.ImageTag
 import com.cleverapp.repository.data.TaggedImage
 
@@ -22,4 +19,7 @@ interface TaggedImagesDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertImageTags(imageTags: List<ImageTag>)
+
+    @Delete
+    fun deleteSavedImage(image: TaggedImage)
 }

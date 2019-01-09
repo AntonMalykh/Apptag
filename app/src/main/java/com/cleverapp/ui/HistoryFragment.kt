@@ -39,10 +39,12 @@ class HistoryFragment : BaseFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel = ViewModelProviders.of(
-                this,
-                ViewModelFactory(activity!!.application))
-                    .get(HistoryViewModel::class.java)
+        viewModel = activity?.let {
+            ViewModelProviders.of(
+                    this,
+                    ViewModelFactory(it.application)).get(HistoryViewModel::class.java)
+
+        } ?: throw IllegalStateException("Invalid activity (null)")
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -58,7 +60,7 @@ class HistoryFragment : BaseFragment() {
         historyAdapter.setOnMenuClickListener(
                 object : OnImageMenuClickListener {
                     override fun onRemoveClicked(image: TaggedImage) {
-
+                        viewModel.onRemoveClicked(image)
                     }
 
                     override fun onCopyClicked(image: TaggedImage) {

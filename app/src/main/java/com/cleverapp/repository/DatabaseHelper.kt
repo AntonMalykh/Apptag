@@ -23,10 +23,14 @@ class DatabaseHelper(
 
     override fun insertTaggedImage(taggedImage: TaggedImage) {
         database.taggedImagesDao().insertTaggedImage(taggedImage)
-        database.taggedImagesDao().insertImageTags(taggedImage.tags)
+        insertImageTags(taggedImage.tags)
     }
 
     override fun insertImageTags(imageTags: List<ImageTag>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        database.taggedImagesDao().insertImageTags(imageTags)
+    }
+
+    override fun deleteSavedImage(image: TaggedImage) {
+        database.taggedImagesDao().deleteSavedImage(image)
     }
 }
