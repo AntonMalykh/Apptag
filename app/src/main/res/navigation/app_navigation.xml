@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/app_navigation"
+    app:startDestination="@id/historyFragment">
+
+    <fragment
+        android:id="@+id/historyFragment"
+        android:name="com.cleverapp.ui.HistoryFragment"
+        android:label="HistoryFragment" >
+        <action
+            android:id="@+id/navigate_history_to_editTags"
+            app:destination="@id/editTagsFragment" app:popUpTo="@id/historyFragment"/>
+    </fragment>
+    <fragment
+        android:id="@+id/editTagsFragment"
+        android:name="com.cleverapp.ui.EditTagsFragment"
+        android:label="EditTagsFragment" >
+    </fragment>
+</navigation>

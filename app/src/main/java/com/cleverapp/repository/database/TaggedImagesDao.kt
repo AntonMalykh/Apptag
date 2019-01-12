@@ -22,4 +22,7 @@ interface TaggedImagesDao {
 
     @Delete
     fun deleteSavedImage(image: TaggedImage)
+
+    @Delete
+    fun deleteImageTags(tags: List<ImageTag>)
 }

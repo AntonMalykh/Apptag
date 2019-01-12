@@ -15,8 +15,8 @@ class ViewModelFactory(
             modelClass.isAssignableFrom(HistoryViewModel::class.java) ->
                 HistoryViewModel(app as App) as T
 
-            modelClass.isAssignableFrom(RootViewModel::class.java) ->
-                RootViewModel(app as App) as T
+            modelClass.isAssignableFrom(EditTagsViewModel::class.java) ->
+                EditTagsViewModel(app as App) as T
 
             else ->
                 throw IllegalArgumentException("View model not found")

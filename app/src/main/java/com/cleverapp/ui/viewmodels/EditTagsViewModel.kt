@@ -4,13 +4,12 @@ import android.net.Uri
 import android.text.TextUtils
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
 import com.cleverapp.App
-import com.cleverapp.repository.Repository
 import com.cleverapp.repository.TagFetchingResult
 import com.cleverapp.repository.data.ImageTag
+import com.cleverapp.repository.data.TaggedImage
 
-class RootViewModel(app: App): BaseViewModel(app) {
+class EditTagsViewModel(app: App): BaseViewModel(app) {
 
     private val imageTagResultObserver: Observer<TagFetchingResult> =
             Observer {
@@ -28,16 +27,20 @@ class RootViewModel(app: App): BaseViewModel(app) {
 
     init {
         repository.getTagFetchingResultLiveData().observeForever(imageTagResultObserver)
-        isFetchingTags.postValue(false)
     }
 
-    fun updateUri(fileUri: Uri) {
-        imagePath.value = fileUri
-    }
-
-    fun updateTags(fileUri: Uri) {
+    fun getImageTags(imageUri: Uri) {
+        imagePath.value = imageUri
         isFetchingTags.value = true
-        repository.fetchTagsForImage(fileUri)
+        repository.fetchTagsForImage(imageUri)
+    }
+
+    fun onSaveClicked() {
+        repository.saveTaggedImage(
+                TaggedImage(
+                        imageTags.value!!.first().imageId,
+                        imagePath.value.toString(),
+                        imageTags.value!!))
     }
 
     override fun onCleared() {

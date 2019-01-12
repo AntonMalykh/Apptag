@@ -5,6 +5,7 @@ import android.net.Uri
 import android.text.TextUtils
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.cleverapp.repository.data.ImageTag
 import com.cleverapp.repository.data.TaggedImage
@@ -20,10 +21,15 @@ class RepositoryImpl(
 
     private val databaseHelper = DatabaseHelper(database)
 
-    private val tagFetchingResult = MediatorLiveData<TagFetchingResult>()
+    private val tagFetchingResult = MutableLiveData<TagFetchingResult>()
+    private val taggedImagesUpdated = MutableLiveData<Boolean>()
 
     override fun getTagFetchingResultLiveData(): LiveData<TagFetchingResult> {
         return tagFetchingResult
+    }
+
+    override fun getTaggedImagesChangedLiveData(): LiveData<Boolean> {
+        return taggedImagesUpdated
     }
 
     override fun fetchTagsForImage(uri: Uri) {
@@ -37,19 +43,20 @@ class RepositoryImpl(
                             }
                         }
                     else {
-                        val newId = UUID.randomUUID().toString()
-                        databaseHelper.insertTaggedImage(
-                                TaggedImage(
-                                        newId,
-                                        uri.toString(),
-                                        stringsToImageTags(newId, it.tags)))
                         tagFetchingResult.value = object: TagFetchingResult {
                             override fun getTaggedImages(): List<ImageTag>? {
-                                return databaseHelper.getTags(newId)
+                                return stringsToImageTags(
+                                        UUID.randomUUID().toString(),
+                                        it.tags)
                             }
                         }
                     }
                 })
+    }
+
+    override fun saveTaggedImage(taggedImage: TaggedImage) {
+        databaseHelper.insertTaggedImage(taggedImage)
+        taggedImagesUpdated.value = true
     }
 
     override fun getSavedImages(): List<TaggedImage> {
@@ -57,7 +64,8 @@ class RepositoryImpl(
     }
 
     override fun deleteSavedImage(image: TaggedImage) {
-        return databaseHelper.deleteSavedImage(image)
+        databaseHelper.deleteSavedImage(image)
+        taggedImagesUpdated.value = true
     }
 
     private fun stringsToImageTags(imageId: String, strings: Collection<String>?): List<ImageTag> {

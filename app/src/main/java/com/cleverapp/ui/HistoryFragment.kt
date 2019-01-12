@@ -9,47 +9,59 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.INVISIBLE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.cleverapp.R
 import com.cleverapp.repository.data.TaggedImage
 import com.cleverapp.ui.recyclerview.HistoryAdapter
+import com.cleverapp.ui.recyclerview.OnImageClickListener
 import com.cleverapp.ui.recyclerview.OnImageMenuClickListener
 import com.cleverapp.ui.viewmodels.HistoryViewModel
-import com.cleverapp.ui.viewmodels.ViewModelFactory
 import com.cleverapp.utils.INTENT_IMAGE_TYPE
 import com.cleverapp.utils.toPlainText
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-class HistoryFragment : BaseFragment() {
+class HistoryFragment: BaseFragment() {
 
     private companion object {
         const val PICK_IMAGE_REQUEST = 0
     }
 
-    private lateinit var fab : FloatingActionButton
-    private lateinit var history : RecyclerView
-    private lateinit var historyAdapter : HistoryAdapter
+    private lateinit var fab: View
+    private lateinit var history: RecyclerView
+    private lateinit var historyAdapter: HistoryAdapter
 
-    private lateinit var viewModel : HistoryViewModel
+    private val viewModel: HistoryViewModel by getViewModel(HistoryViewModel::class.java)
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        viewModel = activity?.let {
-            ViewModelProviders.of(
-                    this,
-                    ViewModelFactory(it.application)).get(HistoryViewModel::class.java)
+    private var onMenuClickListener = object: OnImageMenuClickListener{
+        override fun onRemoveClicked(image: TaggedImage) {
+            viewModel.onRemoveClicked(image)
+        }
 
-        } ?: throw IllegalStateException("Invalid activity (null)")
+        override fun onCopyClicked(image: TaggedImage) {
+            (activity?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager)
+                    .primaryClip =
+                    ClipData.newPlainText("Image tags", image.tags.toPlainText())
+        }
+
+    }
+
+    private val onImageClickListener: OnImageClickListener = object : OnImageClickListener {
+        override fun onImageClicked(image: TaggedImage) {
+//            navController.navigate(
+//                    R.id.navigate_history_to_editTags,
+//                    EditTagsFragment.getArgsForExistingImage(image.id))
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         super.onCreateView(inflater, container, savedInstanceState)
-        val view = inflater.inflate(R.layout.root_fragment, container, false)
+        val view = inflater.inflate(R.layout.history_fragment, container, false)
 
         fab = view.findViewById(R.id.fab)
         history = view.findViewById(R.id.history)
@@ -57,18 +69,10 @@ class HistoryFragment : BaseFragment() {
         fab.setOnClickListener { openFileChooser() }
 
         historyAdapter = HistoryAdapter(Glide.with(this))
-        historyAdapter.setOnMenuClickListener(
-                object : OnImageMenuClickListener {
-                    override fun onRemoveClicked(image: TaggedImage) {
-                        viewModel.onRemoveClicked(image)
-                    }
-
-                    override fun onCopyClicked(image: TaggedImage) {
-                        (activity?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager)
-                                .primaryClip =
-                                    ClipData.newPlainText("Image tags", image.tags.toPlainText())
-                    }
-        })
+                .also {
+                    it.setOnMenuClickListener(onMenuClickListener)
+                    it.setOnImageClickListener(onImageClickListener)
+                }
         history.layoutManager = GridLayoutManager(activity, 2)
         history.adapter = historyAdapter
 
@@ -82,6 +86,7 @@ class HistoryFragment : BaseFragment() {
                 this,
                 Observer {
                     historyAdapter.items = it
+                    history.visibility = if (historyAdapter.itemCount > 0) VISIBLE else INVISIBLE
                 }
         )
     }
@@ -106,7 +111,9 @@ class HistoryFragment : BaseFragment() {
 
         val location : Uri? = data.data
         location?.let {
-
+            navController.navigate(
+                    R.id.navigate_history_to_editTags,
+                    EditTagsFragment.getArgsForNewImage(location))
         }
     }
 }

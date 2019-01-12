@@ -10,7 +10,11 @@ interface Repository {
 
     fun getTagFetchingResultLiveData(): LiveData<TagFetchingResult>
 
+    fun getTaggedImagesChangedLiveData(): LiveData<Boolean>
+
     fun getSavedImages(): List<TaggedImage>
 
     fun deleteSavedImage(image: TaggedImage)
+
+    fun saveTaggedImage(taggedImage: TaggedImage)
 }

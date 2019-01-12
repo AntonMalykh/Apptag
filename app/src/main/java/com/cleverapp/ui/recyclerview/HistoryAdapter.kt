@@ -1,6 +1,8 @@
 package com.cleverapp.ui.recyclerview
 
+import android.net.Uri
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -23,23 +25,31 @@ class HistoryAdapter(
             notifyDataSetChanged()
         }
 
+    private var onImageClickListener: OnImageClickListener? = null
+
     private var onMenuClickListener: OnImageMenuClickListener? = null
 
     fun setOnMenuClickListener(onMenuClickListener: OnImageMenuClickListener) {
         this.onMenuClickListener = onMenuClickListener
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HistoryViewHolder {
-        return HistoryViewHolder(parent)
+    fun setOnImageClickListener(onImageClickListener: OnImageClickListener) {
+        this.onImageClickListener = onImageClickListener
     }
 
     override fun getItemCount(): Int {
         return items.size
     }
 
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HistoryViewHolder {
+        return HistoryViewHolder(parent)
+    }
+
     override fun onBindViewHolder(holder: HistoryViewHolder, position: Int) {
         val image = items[position]
-        glideRequestManager.load("http://publicanthropologist.cmi.no/wp-content/uploads/2018/03/public-sector-universities-protest-against-government-interference-ffa1e31d09e2f54359cc33f79b917e921.jpg").into(holder.preview)
+        glideRequestManager.load(Uri.parse(image.imageUri)).into(holder.preview)
+        holder.itemView.setOnClickListener{ onImageClickListener?.onImageClicked(image)}
+        holder.itemView.setOnLongClickListener { holder.menu.callOnClick() }
         holder.tags.text = image.tags.toPlainText()
         holder.menu.setOnClickListener {
             val menu = PopupMenu(holder.menu.context, holder.menu)
@@ -77,4 +87,8 @@ class HistoryAdapter(
 interface OnImageMenuClickListener {
     fun onRemoveClicked(image: TaggedImage)
     fun onCopyClicked(image: TaggedImage)
+}
+
+interface OnImageClickListener {
+    fun onImageClicked(image: TaggedImage)
 }
