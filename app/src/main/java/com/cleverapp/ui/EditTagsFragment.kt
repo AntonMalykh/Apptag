@@ -4,7 +4,8 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.*
+import android.view.View.INVISIBLE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
@@ -12,9 +13,11 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.cleverapp.R
 import com.cleverapp.ui.recyclerview.TagsAdapter
 import com.cleverapp.ui.viewmodels.EditTagsViewModel
+import com.squareup.picasso.Picasso
 
 class EditTagsFragment: BaseFragment() {
 
@@ -73,19 +76,23 @@ class EditTagsFragment: BaseFragment() {
         }
 
         observeData()
-        viewModel.getImageTags(arguments!!.getParcelable(ARG_KEY_URI))
+        if (savedInstanceState == null)
+            viewModel.getImageTags(arguments!!.getParcelable(ARG_KEY_URI))
         return view
     }
 
     private fun observeData() {
-        viewModel.imagePath.observe(
+        viewModel.imageBytes.observe(
                 this,
                 Observer {
-                    Glide.with(this).load(it).into(preview)
+                    Glide.with(this)
+                            .load(it)
+                            .apply(RequestOptions.centerCropTransform())
+                            .into(preview)
                 }
         )
 
-        viewModel.isFetchingTags.observe(
+        viewModel.isLoadingTags.observe(
                 this,
                 Observer {
                     tags.visibility = if (it == true) INVISIBLE else VISIBLE

@@ -1,9 +1,9 @@
-package com.cleverapp.repository
+package com.cleverapp.repository.database
 
 import com.cleverapp.repository.data.ImageTag
 import com.cleverapp.repository.data.TaggedImage
-import com.cleverapp.repository.database.AppDatabase
 
+//TODO use worker thread
 class DatabaseHelper(val database: AppDatabase){
 
     fun getAllTaggedImages(): List<TaggedImage> {

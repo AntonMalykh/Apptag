@@ -5,46 +5,46 @@ import android.text.TextUtils
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.cleverapp.App
-import com.cleverapp.repository.TagFetchingResult
+import com.cleverapp.repository.TagLoadingResult
 import com.cleverapp.repository.data.ImageTag
 import com.cleverapp.repository.data.TaggedImage
 
 class EditTagsViewModel(app: App): BaseViewModel(app) {
 
-    private val imageTagResultObserver: Observer<TagFetchingResult> =
+    private val imageTagResultObserver: Observer<TagLoadingResult> =
             Observer {
-                isFetchingTags.value = false
+                isLoadingTags.value = false
+                imageBytes.value = it.getPreview()
                 if (TextUtils.isEmpty(it.getError()))
                     imageTags.value = it.getTaggedImages()
                 else
                     error.value = it.getError()
             }
 
-    val imagePath = MutableLiveData<Uri>()
-    val isFetchingTags = MutableLiveData<Boolean>()
+    val imageBytes = MutableLiveData<ByteArray>()
+    val isLoadingTags = MutableLiveData<Boolean>()
     val imageTags = MutableLiveData<List<ImageTag>>()
     val error = MutableLiveData<String>()
 
     init {
-        repository.getTagFetchingResultLiveData().observeForever(imageTagResultObserver)
+        repository.getTagLoadingResultLiveData().observeForever(imageTagResultObserver)
     }
 
     fun getImageTags(imageUri: Uri) {
-        imagePath.value = imageUri
-        isFetchingTags.value = true
-        repository.fetchTagsForImage(imageUri)
+        isLoadingTags.value = true
+        repository.loadTagsForImage(imageUri)
     }
 
     fun onSaveClicked() {
         repository.saveTaggedImage(
                 TaggedImage(
                         imageTags.value!!.first().imageId,
-                        imagePath.value.toString(),
+                        imageBytes.value!!,
                         imageTags.value!!))
     }
 
     override fun onCleared() {
         super.onCleared()
-        repository.getTagFetchingResultLiveData().removeObserver(imageTagResultObserver)
+        repository.getTagLoadingResultLiveData().removeObserver(imageTagResultObserver)
     }
 }

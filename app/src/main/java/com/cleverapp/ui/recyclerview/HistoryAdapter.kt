@@ -1,22 +1,20 @@
 package com.cleverapp.ui.recyclerview
 
-import android.net.Uri
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.RequestManager
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.cleverapp.R
-import com.cleverapp.repository.data.ImageTag
 import com.cleverapp.repository.data.TaggedImage
 import com.cleverapp.utils.toPlainText
+import com.squareup.picasso.Picasso
 
-class HistoryAdapter(
-        private val glideRequestManager: RequestManager)
+class HistoryAdapter
     : RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() {
 
     var items: List<TaggedImage> = emptyList()
@@ -47,7 +45,10 @@ class HistoryAdapter(
 
     override fun onBindViewHolder(holder: HistoryViewHolder, position: Int) {
         val image = items[position]
-        glideRequestManager.load(Uri.parse(image.imageUri)).into(holder.preview)
+        Glide.with(holder.preview)
+                .load(image.previewBytes)
+                .apply(RequestOptions.centerCropTransform())
+                .into(holder.preview)
         holder.itemView.setOnClickListener{ onImageClickListener?.onImageClicked(image)}
         holder.itemView.setOnLongClickListener { holder.menu.callOnClick() }
         holder.tags.text = image.tags.toPlainText()

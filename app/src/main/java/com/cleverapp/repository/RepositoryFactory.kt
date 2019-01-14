@@ -8,7 +8,11 @@ import com.cleverapp.repository.tagservice.TagService
 class RepositoryFactory{
 
     companion object {
-        fun create(contentResolver: ContentResolver, database: AppDatabase, tagService: TagService): Repository =
-                RepositoryImpl(contentResolver, database, tagService)
+        fun create(
+                contentResolver: ContentResolver,
+                database: AppDatabase,
+                tagService: TagService)
+                : Repository =
+                    RepositoryImpl(contentResolver, database, tagService)
     }
 }

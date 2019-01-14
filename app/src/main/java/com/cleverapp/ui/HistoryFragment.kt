@@ -5,6 +5,8 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+import android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -15,7 +17,6 @@ import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.cleverapp.R
 import com.cleverapp.repository.data.TaggedImage
 import com.cleverapp.ui.recyclerview.HistoryAdapter
@@ -24,7 +25,6 @@ import com.cleverapp.ui.recyclerview.OnImageMenuClickListener
 import com.cleverapp.ui.viewmodels.HistoryViewModel
 import com.cleverapp.utils.INTENT_IMAGE_TYPE
 import com.cleverapp.utils.toPlainText
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class HistoryFragment: BaseFragment() {
 
@@ -68,7 +68,7 @@ class HistoryFragment: BaseFragment() {
 
         fab.setOnClickListener { openFileChooser() }
 
-        historyAdapter = HistoryAdapter(Glide.with(this))
+        historyAdapter = HistoryAdapter()
                 .also {
                     it.setOnMenuClickListener(onMenuClickListener)
                     it.setOnImageClickListener(onImageClickListener)

@@ -2,15 +2,17 @@ package com.cleverapp.repository
 
 import android.content.ContentResolver
 import android.net.Uri
-import android.text.TextUtils
+import android.provider.MediaStore
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import com.cleverapp.repository.data.ImageTag
 import com.cleverapp.repository.data.TaggedImage
 import com.cleverapp.repository.database.AppDatabase
+import com.cleverapp.repository.database.DatabaseHelper
+import com.cleverapp.repository.tagservice.ServiceTagLoadingResult
 import com.cleverapp.repository.tagservice.TagService
+import com.cleverapp.utils.MAX_THUMBNAIL_IMAGE_SIZE
+import com.cleverapp.utils.compressImage
 import java.util.*
 
 class RepositoryImpl(
@@ -21,36 +23,26 @@ class RepositoryImpl(
 
     private val databaseHelper = DatabaseHelper(database)
 
-    private val tagFetchingResult = MutableLiveData<TagFetchingResult>()
+    private val tagLoadingResult = MutableLiveData<TagLoadingResult>()
     private val taggedImagesUpdated = MutableLiveData<Boolean>()
 
-    override fun getTagFetchingResultLiveData(): LiveData<TagFetchingResult> {
-        return tagFetchingResult
+    override fun getTagLoadingResultLiveData(): LiveData<TagLoadingResult> {
+        return tagLoadingResult
     }
 
     override fun getTaggedImagesChangedLiveData(): LiveData<Boolean> {
         return taggedImagesUpdated
     }
 
-    override fun fetchTagsForImage(uri: Uri) {
+    override fun loadTagsForImage(uri: Uri) {
         tagService.getImageTags(
-                uriToFileBytes(uri),
-                Observer {
-                    if (!TextUtils.isEmpty(it.error))
-                        tagFetchingResult.value = object: TagFetchingResult{
-                            override fun getError(): String? {
-                                return it.error
-                            }
-                        }
-                    else {
-                        tagFetchingResult.value = object: TagFetchingResult {
-                            override fun getTaggedImages(): List<ImageTag>? {
-                                return stringsToImageTags(
-                                        UUID.randomUUID().toString(),
-                                        it.tags)
-                            }
-                        }
-                    }
+                getImageBytes(uri),
+                Observer { getImageTagResponse ->
+                    // worker thread
+                    tagLoadingResult.postValue(
+                            ServiceTagLoadingResult(
+                                    UUID.randomUUID().toString(),
+                                    getImageTagResponse))
                 })
     }
 
@@ -59,25 +51,29 @@ class RepositoryImpl(
         taggedImagesUpdated.value = true
     }
 
-    override fun getSavedImages(): List<TaggedImage> {
+    override fun getSavedTaggedImages(): List<TaggedImage> {
         return databaseHelper.getAllTaggedImages()
     }
 
-    override fun deleteSavedImage(image: TaggedImage) {
+    override fun deleteSavedTaggedImage(image: TaggedImage) {
         databaseHelper.deleteSavedImage(image)
         taggedImagesUpdated.value = true
     }
 
-    private fun stringsToImageTags(imageId: String, strings: Collection<String>?): List<ImageTag> {
-        if (strings == null)
-            return emptyList()
-        return strings.fold(ArrayList(strings.size)){ acc, tag ->
-            acc.add(ImageTag(imageId, tag))
-            acc
-        }
-    }
+    private fun getImageBytes(uri: Uri): ByteArray {
+        val c = contentResolver.query(uri, null, null, null, null)
 
-    private fun uriToFileBytes(uri: Uri): ByteArray {
-        return contentResolver.openInputStream(uri).readBytes()
+        c?.let {
+            var size = 0
+            if (c.moveToFirst()) {
+                size = c.getInt(c.getColumnIndex(MediaStore.MediaColumns.SIZE))
+            }
+            c.close()
+            return if (size > MAX_THUMBNAIL_IMAGE_SIZE)
+                compressImage(contentResolver.openInputStream(uri), MAX_THUMBNAIL_IMAGE_SIZE)
+            else
+                contentResolver.openInputStream(uri).readBytes()
+        }
+        return ByteArray(0)
     }
 }

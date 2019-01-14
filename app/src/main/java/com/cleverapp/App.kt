@@ -7,7 +7,7 @@ import com.cleverapp.repository.database.AppDatabase
 import com.cleverapp.repository.database.AppDatabase.Companion.DATABASE_NAME
 import com.cleverapp.repository.tagservice.TagServiceFactory
 
-class App : Application() {
+class App: Application() {
 
     val repository by lazy {
         RepositoryFactory.create(
