@@ -7,12 +7,13 @@ import java.io.InputStream
 
 const val INTENT_IMAGE_TYPE = "image/*"
 
-const val MAX_THUMBNAIL_IMAGE_SIZE = 512000
+const val MAX_THUMBNAIL_IMAGE_FILE_SIZE = 256000
+const val MAX_THUMBNAIL_IMAGE_DIMEN_SIZE = 1024
 
 fun compressImage(originalImageStream: InputStream, desiredImgSize: Int): ByteArray {
     val original = BitmapFactory.decodeStream(originalImageStream)
 
-    val maxDesiredDimen = Math.sqrt(desiredImgSize.toDouble()).toInt()
+    val maxDesiredDimen = MAX_THUMBNAIL_IMAGE_DIMEN_SIZE
     val origRatio: Double = original.width.toDouble() / original.height
 
     val newHeight: Int
@@ -28,15 +29,18 @@ fun compressImage(originalImageStream: InputStream, desiredImgSize: Int): ByteAr
         }
         else -> {
             newHeight = maxDesiredDimen
-            newWidth = (newHeight / origRatio).toInt()
+            newWidth = (newHeight * origRatio).toInt()
         }
     }
 
     val originalResized = Bitmap.createScaledBitmap(original, newWidth, newHeight, true)
     original.recycle()
 
+    val START_QUALITY = 80
+    val QUALITY_CHANGE_STEP = 10
+
     var compressedSize: Int
-    var quality = 100
+    var quality = START_QUALITY
     val compressed = ByteArrayOutputStream()
     do {
         compressed.flush()
@@ -44,9 +48,9 @@ fun compressImage(originalImageStream: InputStream, desiredImgSize: Int): ByteAr
 
         originalResized.compress(Bitmap.CompressFormat.JPEG, quality, compressed)
         compressedSize = compressed.size()
-        quality -= 5
+        quality -= QUALITY_CHANGE_STEP
     }
-    while (compressedSize > desiredImgSize && quality > 5)
+    while (compressedSize > desiredImgSize && quality > QUALITY_CHANGE_STEP)
 
     return compressed.toByteArray()
 }

@@ -11,7 +11,7 @@ import com.cleverapp.repository.database.AppDatabase
 import com.cleverapp.repository.database.DatabaseHelper
 import com.cleverapp.repository.tagservice.ServiceTagLoadingResult
 import com.cleverapp.repository.tagservice.TagService
-import com.cleverapp.utils.MAX_THUMBNAIL_IMAGE_SIZE
+import com.cleverapp.utils.MAX_THUMBNAIL_IMAGE_FILE_SIZE
 import com.cleverapp.utils.compressImage
 import java.util.*
 
@@ -37,8 +37,8 @@ class RepositoryImpl(
     override fun loadTagsForImage(uri: Uri) {
         tagService.getImageTags(
                 getImageBytes(uri),
+                // worker thread
                 Observer { getImageTagResponse ->
-                    // worker thread
                     tagLoadingResult.postValue(
                             ServiceTagLoadingResult(
                                     UUID.randomUUID().toString(),
@@ -69,8 +69,8 @@ class RepositoryImpl(
                 size = c.getInt(c.getColumnIndex(MediaStore.MediaColumns.SIZE))
             }
             c.close()
-            return if (size > MAX_THUMBNAIL_IMAGE_SIZE)
-                compressImage(contentResolver.openInputStream(uri), MAX_THUMBNAIL_IMAGE_SIZE)
+            return if (size > MAX_THUMBNAIL_IMAGE_FILE_SIZE)
+                compressImage(contentResolver.openInputStream(uri), MAX_THUMBNAIL_IMAGE_FILE_SIZE)
             else
                 contentResolver.openInputStream(uri).readBytes()
         }

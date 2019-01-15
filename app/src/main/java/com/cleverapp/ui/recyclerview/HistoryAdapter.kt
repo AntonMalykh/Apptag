@@ -1,30 +1,19 @@
 package com.cleverapp.ui.recyclerview
 
-import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
-import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.cleverapp.R
 import com.cleverapp.repository.data.TaggedImage
 import com.cleverapp.utils.toPlainText
-import com.squareup.picasso.Picasso
 
-class HistoryAdapter
-    : RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() {
-
-    var items: List<TaggedImage> = emptyList()
-        set(value) {
-            field = value
-            notifyDataSetChanged()
-        }
+class HistoryAdapter: BaseAdapter<TaggedImage, HistoryAdapter.HistoryViewHolder>() {
 
     private var onImageClickListener: OnImageClickListener? = null
-
     private var onMenuClickListener: OnImageMenuClickListener? = null
 
     fun setOnMenuClickListener(onMenuClickListener: OnImageMenuClickListener) {
@@ -35,34 +24,29 @@ class HistoryAdapter
         this.onImageClickListener = onImageClickListener
     }
 
-    override fun getItemCount(): Int {
-        return items.size
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HistoryViewHolder {
         return HistoryViewHolder(parent)
     }
 
-    override fun onBindViewHolder(holder: HistoryViewHolder, position: Int) {
-        val image = items[position]
+    override fun bindViewHolder(holder: HistoryViewHolder, item: TaggedImage){
         Glide.with(holder.preview)
-                .load(image.previewBytes)
+                .load(item.previewBytes)
                 .apply(RequestOptions.centerCropTransform())
                 .into(holder.preview)
-        holder.itemView.setOnClickListener{ onImageClickListener?.onImageClicked(image)}
+        holder.itemView.setOnClickListener{ onImageClickListener?.onImageClicked(item)}
         holder.itemView.setOnLongClickListener { holder.menu.callOnClick() }
-        holder.tags.text = image.tags.toPlainText()
+        holder.tags.text = item.tags.toPlainText()
         holder.menu.setOnClickListener {
             val menu = PopupMenu(holder.menu.context, holder.menu)
             menu.inflate(R.menu.image_item_menu)
             menu.setOnMenuItemClickListener { menuItem ->
                 return@setOnMenuItemClickListener when {
                     menuItem.itemId == R.id.remove -> {
-                        onMenuClickListener?.onRemoveClicked(image)
+                        onMenuClickListener?.onRemoveClicked(item)
                         true
                     }
                     menuItem.itemId == R.id.copy -> {
-                        onMenuClickListener?.onCopyClicked(image)
+                        onMenuClickListener?.onCopyClicked(item)
                         true
                     }
                     else ->
@@ -74,10 +58,8 @@ class HistoryAdapter
     }
 
     class HistoryViewHolder(parent: ViewGroup):
-            RecyclerView.ViewHolder(
-                    LayoutInflater
-                            .from(parent.context)
-                            .inflate(R.layout.history_view_holder, parent, false)) {
+            BaseViewHolder(
+                    parent, R.layout.history_view_holder) {
 
         val preview: ImageView = itemView.findViewById(R.id.preview)
         val tags: TextView = itemView.findViewById(R.id.tags)
