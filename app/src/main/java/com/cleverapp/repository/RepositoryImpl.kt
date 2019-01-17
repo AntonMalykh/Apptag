@@ -9,7 +9,8 @@ import androidx.lifecycle.Observer
 import com.cleverapp.repository.data.TaggedImage
 import com.cleverapp.repository.database.AppDatabase
 import com.cleverapp.repository.database.DatabaseHelper
-import com.cleverapp.repository.tagservice.ServiceTagLoadingResult
+import com.cleverapp.repository.database.DatabaseTaggedImageLoadingResult
+import com.cleverapp.repository.tagservice.ServiceTaggedImageLoadingResult
 import com.cleverapp.repository.tagservice.TagService
 import com.cleverapp.utils.MAX_THUMBNAIL_IMAGE_FILE_SIZE
 import com.cleverapp.utils.compressImage
@@ -23,27 +24,36 @@ class RepositoryImpl(
 
     private val databaseHelper = DatabaseHelper(database)
 
-    private val tagLoadingResult = MutableLiveData<TagLoadingResult>()
+    private var tagLoadedObserver: Observer<TaggedImageLoadingResult>? = null
     private val taggedImagesUpdated = MutableLiveData<Boolean>()
 
-    override fun getTagLoadingResultLiveData(): LiveData<TagLoadingResult> {
-        return tagLoadingResult
+    override fun observeTagLoaded(observer: Observer<TaggedImageLoadingResult>) {
+        tagLoadedObserver = observer
+    }
+
+    override fun removeTagLoadedObserver(observer: Observer<TaggedImageLoadingResult>) {
+        tagLoadedObserver = null
     }
 
     override fun getTaggedImagesChangedLiveData(): LiveData<Boolean> {
         return taggedImagesUpdated
     }
 
-    override fun loadTagsForImage(uri: Uri) {
+    override fun loadNewTaggedImage(uri: Uri) {
         tagService.getImageTags(
                 getImageBytes(uri),
                 // worker thread
                 Observer { getImageTagResponse ->
-                    tagLoadingResult.postValue(
-                            ServiceTagLoadingResult(
+                    tagLoadedObserver?.onChanged(
+                            ServiceTaggedImageLoadingResult(
                                     UUID.randomUUID().toString(),
                                     getImageTagResponse))
                 })
+    }
+
+    override fun loadSavedTaggedImage(imageId: String) {
+        tagLoadedObserver?.onChanged(
+                DatabaseTaggedImageLoadingResult(databaseHelper.getTaggedImage(imageId)))
     }
 
     override fun saveTaggedImage(taggedImage: TaggedImage) {

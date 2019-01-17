@@ -1,10 +1,7 @@
 package com.cleverapp.ui.recyclerview
 
 import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.PopupMenu
-import android.widget.TextView
+import android.widget.*
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.cleverapp.R
@@ -16,6 +13,8 @@ class HistoryAdapter: BaseAdapter<TaggedImage, HistoryAdapter.HistoryViewHolder>
     private var onImageClickListener: OnImageClickListener? = null
     private var onMenuClickListener: OnImageMenuClickListener? = null
 
+    var layoutParamsProvider: LayoutParamsProvider? = null
+
     fun setOnMenuClickListener(onMenuClickListener: OnImageMenuClickListener) {
         this.onMenuClickListener = onMenuClickListener
     }
@@ -25,7 +24,11 @@ class HistoryAdapter: BaseAdapter<TaggedImage, HistoryAdapter.HistoryViewHolder>
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HistoryViewHolder {
-        return HistoryViewHolder(parent)
+        val holder = HistoryViewHolder(parent)
+        layoutParamsProvider?.let {
+            holder.itemView.layoutParams = it.getLayoutParams()
+        }
+        return holder
     }
 
     override fun bindViewHolder(holder: HistoryViewHolder, item: TaggedImage){

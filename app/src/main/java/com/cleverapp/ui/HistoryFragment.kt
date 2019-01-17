@@ -14,12 +14,14 @@ import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cleverapp.R
 import com.cleverapp.repository.data.TaggedImage
 import com.cleverapp.ui.recyclerview.HistoryAdapter
+import com.cleverapp.ui.recyclerview.LayoutParamsProvider
 import com.cleverapp.ui.recyclerview.OnImageClickListener
 import com.cleverapp.ui.recyclerview.OnImageMenuClickListener
 import com.cleverapp.ui.viewmodels.HistoryViewModel
@@ -27,6 +29,9 @@ import com.cleverapp.utils.INTENT_IMAGE_TYPE
 import com.cleverapp.utils.toPlainText
 
 class HistoryFragment: BaseFragment() {
+
+    override val viewId: Int
+        get() = R.layout.history_fragment
 
     private companion object {
         const val PICK_IMAGE_REQUEST = 0
@@ -53,33 +58,37 @@ class HistoryFragment: BaseFragment() {
 
     private val onImageClickListener: OnImageClickListener = object : OnImageClickListener {
         override fun onImageClicked(image: TaggedImage) {
-//            navController.navigate(
-//                    R.id.navigate_history_to_editTags,
-//                    EditTagsFragment.getArgsForExistingImage(image.id))
+            navController.navigate(
+                    R.id.navigate_history_to_editTags,
+                    EditTagsFragment.getArgsForExistingImage(image.id))
         }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        super.onCreateView(inflater, container, savedInstanceState)
-        val view = inflater.inflate(R.layout.history_fragment, container, false)
-
+        val view = super.onCreateView(inflater, container, savedInstanceState)!!
         fab = view.findViewById(R.id.fab)
         history = view.findViewById(R.id.history)
 
         fab.setOnClickListener { openFileChooser() }
+        history.layoutManager = GridLayoutManager(activity, 3)
 
+        return view
+    }
+
+    override fun onViewIsLaidOut() {
+        super.onViewIsLaidOut()
         historyAdapter = HistoryAdapter()
                 .also {
                     it.setOnMenuClickListener(onMenuClickListener)
                     it.setOnImageClickListener(onImageClickListener)
+                    it.layoutParamsProvider = LayoutParamsProvider(view!!.width, 3)
                 }
-        history.layoutManager = GridLayoutManager(activity, 2)
         history.adapter = historyAdapter
-
         observeData()
-        viewModel.updateHistory()
-        return view
+        if (isJustCreated())
+            viewModel.updateHistory()
     }
+
 
     private fun observeData() {
         viewModel.images.observe(

@@ -1,17 +1,17 @@
 package com.cleverapp.ui.viewmodels
 
+import android.app.Application
 import android.net.Uri
 import android.text.TextUtils
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import com.cleverapp.App
-import com.cleverapp.repository.TagLoadingResult
+import com.cleverapp.repository.TaggedImageLoadingResult
 import com.cleverapp.repository.data.ImageTag
 import com.cleverapp.repository.data.TaggedImage
 
-class EditTagsViewModel(app: App): BaseViewModel(app) {
+class EditTagsViewModel(app: Application): BaseViewModel(app) {
 
-    private val imageTagResultObserver: Observer<TagLoadingResult> =
+    private val imageTagResultObserver: Observer<TaggedImageLoadingResult> =
             Observer {
                 isLoadingTags.value = false
                 imageBytes.value = it.getPreview()
@@ -27,12 +27,17 @@ class EditTagsViewModel(app: App): BaseViewModel(app) {
     val error = MutableLiveData<String>()
 
     init {
-        repository.getTagLoadingResultLiveData().observeForever(imageTagResultObserver)
+        repository.observeTagLoaded(imageTagResultObserver)
     }
 
-    fun getImageTags(imageUri: Uri) {
+    fun loadTaggedImage(imageUri: Uri) {
         isLoadingTags.value = true
-        repository.loadTagsForImage(imageUri)
+        repository.loadNewTaggedImage(imageUri)
+    }
+
+    fun loadTaggedImage(imageId: String) {
+        isLoadingTags.value = true
+        repository.loadSavedTaggedImage(imageId)
     }
 
     fun onSaveClicked() {
@@ -45,6 +50,6 @@ class EditTagsViewModel(app: App): BaseViewModel(app) {
 
     override fun onCleared() {
         super.onCleared()
-        repository.getTagLoadingResultLiveData().removeObserver(imageTagResultObserver)
+        repository.observeTagLoaded(imageTagResultObserver)
     }
 }

@@ -1,14 +1,14 @@
 package com.cleverapp.repository.tagservice
 
-import com.cleverapp.repository.TagLoadingResult
+import com.cleverapp.repository.TaggedImageLoadingResult
 import com.cleverapp.repository.data.ImageTag
 import com.cleverapp.repository.tagservice.response.GetImageTagResponse
 import java.util.ArrayList
 
-class ServiceTagLoadingResult(
+class ServiceTaggedImageLoadingResult(
         private val imageId: String,
         private val response: GetImageTagResponse)
-    : TagLoadingResult {
+    : TaggedImageLoadingResult {
 
     private val tagsConverted = stringsToImageTags(response.tags)
 

@@ -17,7 +17,6 @@ import com.bumptech.glide.request.RequestOptions
 import com.cleverapp.R
 import com.cleverapp.ui.recyclerview.TagsAdapter
 import com.cleverapp.ui.viewmodels.EditTagsViewModel
-import com.squareup.picasso.Picasso
 
 class EditTagsFragment: BaseFragment() {
 
@@ -41,7 +40,14 @@ class EditTagsFragment: BaseFragment() {
         fun getArgsForExistingImage(imageId: String): Bundle {
             return newBundle(null, imageId)
         }
+
+        private fun isNewImage(args: Bundle): Boolean {
+            return args.containsKey(ARG_KEY_URI)
+        }
     }
+
+    override val viewId: Int
+        get() = R.layout.edit_tags_fragment
 
     private lateinit var preview: ImageView
     private lateinit var tags: RecyclerView
@@ -53,20 +59,13 @@ class EditTagsFragment: BaseFragment() {
     private val viewModel: EditTagsViewModel by getViewModel(EditTagsViewModel::class.java)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        super.onCreateView(inflater, container, savedInstanceState)
-        val view = inflater.inflate(R.layout.edit_tags_fragment, container, false)
+        val view = super.onCreateView(inflater, container, savedInstanceState)!!
 
         preview = view.findViewById(R.id.preview)
         tags = view.findViewById(R.id.tags)
         cancel = view.findViewById(R.id.button_cancel)
         save = view.findViewById(R.id.button_save)
 
-        tagsAdapter = TagsAdapter().apply {
-            getIsEmptyLiveData().observeForever {
-                save.isEnabled = it == false
-            }
-        }
-        tags.adapter = tagsAdapter
         tags.layoutManager = LinearLayoutManager(activity)
 
         cancel.setOnClickListener{ navController.popBackStack() }
@@ -75,10 +74,28 @@ class EditTagsFragment: BaseFragment() {
             navController.popBackStack()
         }
 
-        observeData()
-        if (savedInstanceState == null)
-            viewModel.getImageTags(arguments!!.getParcelable(ARG_KEY_URI))
         return view
+    }
+
+    override fun onViewIsLaidOut() {
+        super.onViewIsLaidOut()
+
+        tagsAdapter = TagsAdapter().apply {
+            getIsEmptyLiveData().observeForever {
+                save.isEnabled = it == false
+            }
+        }
+        tags.adapter = tagsAdapter
+
+        observeData()
+        if (isJustCreated()) {
+            when{
+                isNewImage(arguments!!) ->
+                    viewModel.loadTaggedImage(arguments!!.getParcelable(ARG_KEY_URI) as Uri)
+                else ->
+                    viewModel.loadTaggedImage(arguments!!.getString(ARG_KEY_IMAGE_ID)!!)
+            }
+        }
     }
 
     private fun observeData() {

@@ -4,4 +4,7 @@
     <string name="image_chooser_title">Select Image</string>
     <string name="remove">Remove</string>
     <string name="copy_tags">Copy tags</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="empty">Empty</string>
 </resources>

@@ -10,9 +10,9 @@
         android:id="@+id/preview"
         android:layout_width="0dp"
         android:layout_height="200dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginStart="@dimen/offset_small"
+        android:layout_marginTop="@dimen/offset_small"
+        android:layout_marginEnd="@dimen/offset_small"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -31,9 +31,9 @@
         android:id="@+id/tags"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginStart="@dimen/offset_small"
+        android:layout_marginTop="@dimen/offset_small"
+        android:layout_marginEnd="@dimen/offset_small"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         app:layout_constraintBottom_toTopOf="@+id/buttons"
         app:layout_constraintEnd_toEndOf="parent"
@@ -49,8 +49,8 @@
         android:id="@+id/buttons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginStart="@dimen/offset_small"
+        android:layout_marginEnd="@dimen/offset_small"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -60,11 +60,10 @@
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/button_cancel"
             android:layout_width="0dp"
-            android:layout_height="56dp"
+            android:layout_height="@dimen/button_height_default"
             android:layout_weight="0.5"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:textSize="16sp"
-            android:text="Cancel"
+            style="@style/ButtonDefault"
+            android:text="@string/cancel"
             tools:text="CANCEL" />
 
         <androidx.appcompat.widget.AppCompatButton
@@ -72,9 +71,8 @@
             android:layout_width="0dp"
             android:layout_height="56dp"
             android:layout_weight="0.5"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:textSize="16sp"
-            android:text="Save"
+            style="@style/ButtonDefault"
+            android:text="@string/save"
             tools:text="SAVE" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

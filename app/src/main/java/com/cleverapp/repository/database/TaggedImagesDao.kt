@@ -11,7 +11,7 @@ interface TaggedImagesDao {
     fun getAllTaggedImages(): List<TaggedImage>
 
     @Query("SELECT * FROM ${AppDatabase.IMAGE_TAGS_TABLE_NAME} " +
-            "where ${ImageTag.COLUMN_NAME_IMAGE_ID} = :imageId")
+            "WHERE ${ImageTag.COLUMN_NAME_IMAGE_ID} = :imageId")
     fun getTags(imageId: String): List<ImageTag>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -25,4 +25,8 @@ interface TaggedImagesDao {
 
     @Delete
     fun deleteImageTags(tags: List<ImageTag>)
+
+    @Query("SELECT * FROM ${AppDatabase.TAGGED_IMAGES_TABLE_NAME} " +
+            "WHERE ${TaggedImage.COLUMN_NAME_ID} = :imageId")
+    fun getTaggedImage(imageId: String): TaggedImage
 }

@@ -1,11 +1,11 @@
 package com.cleverapp.ui.viewmodels
 
+import android.app.Application
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import com.cleverapp.App
 import com.cleverapp.repository.data.TaggedImage
 
-class HistoryViewModel(app: App): BaseViewModel(app) {
+class HistoryViewModel(app: Application): BaseViewModel(app) {
 
     var imagesChangedObserver: Observer<Boolean> = Observer {
         if (it == true)

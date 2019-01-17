@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="list_item_height_default">56dp</dimen>
+    <dimen name="offset_small">8dp</dimen>
+    <dimen name="button_height_default">56dp</dimen>
+    <dimen name="text_size_medium">16sp</dimen>
+    <dimen name="offset_medium">16dp</dimen>
+</resources>
