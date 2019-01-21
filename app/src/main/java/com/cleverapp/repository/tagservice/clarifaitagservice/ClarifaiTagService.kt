@@ -12,7 +12,7 @@ import com.cleverapp.repository.tagservice.GetImageTagResponse
 
 internal class ClarifaiTagService : TagService {
 
-    private val CLARIFAI_API_KEY = "14da7164b50547b38e89ef28c55810a1"
+    private val CLARIFAI_API_KEY = ""
 
     private var client: ClarifaiClient
 

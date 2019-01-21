@@ -15,7 +15,9 @@ private const val VIEW_TYPE_TAG = 1
 class TagsAdapter: BaseAdapter<ImageTag>() {
 
     override var items = super.items
-        get() = items.subList(1, items.size)
+        get() {
+            return if (field.isEmpty()) field else field.subList(1, field.size)
+        }
         set(value) {
             field = value
             items.add(0, ADD_STUB)
@@ -23,7 +25,7 @@ class TagsAdapter: BaseAdapter<ImageTag>() {
         }
 
     override fun getItemViewType(position: Int): Int {
-        return if (position == 1) VIEW_TYPE_ADD_STUB else VIEW_TYPE_TAG
+        return if (position == 0) VIEW_TYPE_ADD_STUB else VIEW_TYPE_TAG
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder<ImageTag> {
@@ -42,8 +44,13 @@ class TagsAdapter: BaseAdapter<ImageTag>() {
 
         override fun bindItem(item: ImageTag) {
             tag.text = item.tag
-            edit.setOnClickListener {  }
-            move.setOnTouchListener { v, event -> true }
+            edit.setOnClickListener {
+                // TODO implement
+            }
+            move.setOnTouchListener { v, event ->
+                // TODO implement
+                true
+            }
         }
     }
 
@@ -54,7 +61,7 @@ class TagsAdapter: BaseAdapter<ImageTag>() {
 
         init {
             itemView.setOnClickListener {
-
+                // TODO implement
             }
         }
     }

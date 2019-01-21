@@ -136,7 +136,9 @@ class HistoryFragment: BaseFragment() {
     }
 
     private fun observeViewModel() {
-        viewModel.getImagesLiveData().observe(this, Observer { historyAdapter.items = it })
+        viewModel.getImagesLiveData().observe(
+                this,
+                Observer { historyAdapter.items = it.toMutableList() })
 
         viewModel.getViewModeLiveData().observe(this, Observer { applyViewMode(it) })
     }
