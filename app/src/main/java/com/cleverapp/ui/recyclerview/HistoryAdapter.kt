@@ -3,12 +3,14 @@ package com.cleverapp.ui.recyclerview
 import android.view.ViewGroup
 import android.widget.*
 import com.bumptech.glide.Glide
+import com.bumptech.glide.TransitionOptions
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.request.RequestOptions
 import com.cleverapp.R
 import com.cleverapp.repository.data.TaggedImage
 import com.cleverapp.utils.toPlainText
 
-class HistoryAdapter: BaseAdapter<TaggedImage, HistoryAdapter.HistoryViewHolder>() {
+class HistoryAdapter: BaseAdapter<TaggedImage>() {
 
     private var onImageClickListener: OnImageClickListener? = null
     private var onMenuClickListener: OnImageMenuClickListener? = null
@@ -23,7 +25,7 @@ class HistoryAdapter: BaseAdapter<TaggedImage, HistoryAdapter.HistoryViewHolder>
         this.onImageClickListener = onImageClickListener
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HistoryViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder<TaggedImage> {
         val holder = HistoryViewHolder(parent)
         layoutParamsProvider?.let {
             holder.itemView.layoutParams = it.getLayoutParams()
@@ -31,42 +33,43 @@ class HistoryAdapter: BaseAdapter<TaggedImage, HistoryAdapter.HistoryViewHolder>
         return holder
     }
 
-    override fun bindViewHolder(holder: HistoryViewHolder, item: TaggedImage){
-        Glide.with(holder.preview)
-                .load(item.previewBytes)
-                .apply(RequestOptions.centerCropTransform())
-                .into(holder.preview)
-        holder.itemView.setOnClickListener{ onImageClickListener?.onImageClicked(item)}
-        holder.itemView.setOnLongClickListener { holder.menu.callOnClick() }
-        holder.tags.text = item.tags.toPlainText()
-        holder.menu.setOnClickListener {
-            val menu = PopupMenu(holder.menu.context, holder.menu)
-            menu.inflate(R.menu.image_item_menu)
-            menu.setOnMenuItemClickListener { menuItem ->
-                return@setOnMenuItemClickListener when {
-                    menuItem.itemId == R.id.remove -> {
-                        onMenuClickListener?.onRemoveClicked(item)
-                        true
-                    }
-                    menuItem.itemId == R.id.copy -> {
-                        onMenuClickListener?.onCopyClicked(item)
-                        true
-                    }
-                    else ->
-                        false
-                }
-            }
-            menu.show()
-        }
-    }
-
-    class HistoryViewHolder(parent: ViewGroup):
-            BaseViewHolder(
+    inner class HistoryViewHolder(parent: ViewGroup):
+            BaseViewHolder<TaggedImage>(
                     parent, R.layout.history_view_holder) {
 
-        val preview: ImageView = itemView.findViewById(R.id.preview)
-        val tags: TextView = itemView.findViewById(R.id.tags)
-        val menu: ImageButton = itemView.findViewById(R.id.menu)
+        private val preview: ImageView = itemView.findViewById(R.id.preview)
+        private val tags: TextView = itemView.findViewById(R.id.tags)
+        private val menu: ImageButton = itemView.findViewById(R.id.menu)
+
+        override fun bindItem(item: TaggedImage) {
+            super.bindItem(item)
+            Glide.with(preview)
+                    .load(item.previewBytes)
+                    .apply(RequestOptions.centerCropTransform())
+                    .transition(DrawableTransitionOptions.withCrossFade())
+                    .into(preview)
+            itemView.setOnClickListener{ onImageClickListener?.onImageClicked(item) }
+            tags.text = item.tags.toPlainText()
+            menu.setOnClickListener {
+                val menu = PopupMenu(menu.context, menu)
+                menu.inflate(R.menu.image_item_menu)
+                menu.setOnMenuItemClickListener { menuItem ->
+                    return@setOnMenuItemClickListener when {
+                        menuItem.itemId == R.id.remove -> {
+                            onMenuClickListener?.onRemoveClicked(item)
+                            true
+                        }
+                        menuItem.itemId == R.id.copy -> {
+                            onMenuClickListener?.onCopyClicked(item)
+                            true
+                        }
+                        else ->
+                            false
+                    }
+                }
+                menu.show()
+            }
+        }
     }
 }
 

@@ -8,11 +8,11 @@ import clarifai2.dto.input.ClarifaiInput
 import clarifai2.dto.model.output.ClarifaiOutput
 import clarifai2.dto.prediction.Concept
 import com.cleverapp.repository.tagservice.TagService
-import com.cleverapp.repository.tagservice.response.GetImageTagResponse
+import com.cleverapp.repository.tagservice.GetImageTagResponse
 
 internal class ClarifaiTagService : TagService {
 
-    private val CLARIFAI_API_KEY = ""
+    private val CLARIFAI_API_KEY = "14da7164b50547b38e89ef28c55810a1"
 
     private var client: ClarifaiClient
 

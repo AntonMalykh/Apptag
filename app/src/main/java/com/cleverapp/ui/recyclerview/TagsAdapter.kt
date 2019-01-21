@@ -1,26 +1,62 @@
 package com.cleverapp.ui.recyclerview
 
+import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.cleverapp.R
 import com.cleverapp.repository.data.ImageTag
 
-class TagsAdapter: BaseAdapter<ImageTag, TagsAdapter.TagViewHolder>() {
+private const val ADD_STUB_IMAGE_ID = "ADD"
+private val ADD_STUB = ImageTag(ADD_STUB_IMAGE_ID)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TagViewHolder {
-        return TagViewHolder(parent)
+private const val VIEW_TYPE_ADD_STUB = 0
+private const val VIEW_TYPE_TAG = 1
+
+class TagsAdapter: BaseAdapter<ImageTag>() {
+
+    override var items = super.items
+        get() = items.subList(1, items.size)
+        set(value) {
+            field = value
+            items.add(0, ADD_STUB)
+            notifyDataSetChanged()
+        }
+
+    override fun getItemViewType(position: Int): Int {
+        return if (position == 1) VIEW_TYPE_ADD_STUB else VIEW_TYPE_TAG
     }
 
-    override fun bindViewHolder(holder: TagViewHolder, item: ImageTag) {
-        holder.tag.text = item.tag
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder<ImageTag> {
+        return if (viewType == VIEW_TYPE_ADD_STUB) AddStubViewHolder(parent)
+            else TagViewHolder(parent)
     }
 
     class TagViewHolder(parent: ViewGroup):
-            BaseViewHolder(
+            BaseViewHolder<ImageTag>(
                     parent,
                     R.layout.tag_view_holder) {
 
-        val tag: TextView = itemView.findViewById(R.id.tag)
+        private val tag: TextView = itemView.findViewById(R.id.tag)
+        private val edit: View = itemView.findViewById(R.id.edit)
+        private val move: View = itemView.findViewById(R.id.move)
+
+        override fun bindItem(item: ImageTag) {
+            tag.text = item.tag
+            edit.setOnClickListener {  }
+            move.setOnTouchListener { v, event -> true }
+        }
+    }
+
+    class AddStubViewHolder(parent: ViewGroup) :
+            BaseViewHolder<ImageTag>(
+                    parent,
+                    R.layout.add_tag_holder) {
+
+        init {
+            itemView.setOnClickListener {
+
+            }
+        }
     }
 
 }

@@ -36,4 +36,12 @@ class DatabaseHelper(val database: AppDatabase){
         return database.taggedImagesDao().getTaggedImage(imageId)
                 .also {it.tags = getTags(it.id)}
     }
+
+    fun updateTaggedImages(imagesToUpdate: List<TaggedImage>) {
+        database.taggedImagesDao().updateTaggedImages(imagesToUpdate)
+    }
+
+    fun updateImageTags(tagsToUpdate: List<ImageTag>) {
+        database.taggedImagesDao().updateImageTags(tagsToUpdate)
+    }
 }

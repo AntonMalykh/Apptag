@@ -1,10 +1,7 @@
 package com.cleverapp.repository.data
 
-import androidx.room.ColumnInfo
+import androidx.room.*
 import androidx.room.ColumnInfo.BLOB
-import androidx.room.Entity
-import androidx.room.Ignore
-import androidx.room.PrimaryKey
 import com.cleverapp.repository.database.AppDatabase.Companion.TAGGED_IMAGES_TABLE_NAME
 
 @Entity(tableName = TAGGED_IMAGES_TABLE_NAME)
@@ -13,16 +10,20 @@ data class TaggedImage(
         @ColumnInfo(name = COLUMN_NAME_ID)
         var id: String,
         @ColumnInfo(typeAffinity = BLOB)
-        var previewBytes: ByteArray){
+        var previewBytes: ByteArray,
+        @ColumnInfo(name = COLUMN_NAME_ORDINAL_NUM)
+        var ordinalNum: Int){
 
     constructor(id: String,
                 previewBytes: ByteArray,
-                tags: List<ImageTag>) : this(id, previewBytes){
+                tags: List<ImageTag>)
+            : this(id, previewBytes, 0){
         this.tags = tags
     }
 
     companion object {
         const val COLUMN_NAME_ID = "id"
+        const val COLUMN_NAME_ORDINAL_NUM = "ordinal_num"
     }
 
     @Ignore

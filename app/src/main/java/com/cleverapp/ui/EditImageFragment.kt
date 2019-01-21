@@ -10,15 +10,17 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.cleverapp.R
+import com.cleverapp.ui.recyclerview.AppItemTouchHelper
 import com.cleverapp.ui.recyclerview.TagsAdapter
-import com.cleverapp.ui.viewmodels.EditTagsViewModel
+import com.cleverapp.ui.viewmodels.EditImageViewModel
 
-class EditTagsFragment: BaseFragment() {
+class EditImageFragment: BaseFragment() {
 
     companion object {
         private const val ARG_KEY_URI = "ARG_KEY_URI"
@@ -37,7 +39,7 @@ class EditTagsFragment: BaseFragment() {
             return newBundle(imageUri, null)
         }
 
-        fun getArgsForExistingImage(imageId: String): Bundle {
+        fun getArgsForSavedImage(imageId: String): Bundle {
             return newBundle(null, imageId)
         }
 
@@ -47,7 +49,7 @@ class EditTagsFragment: BaseFragment() {
     }
 
     override val viewId: Int
-        get() = R.layout.edit_tags_fragment
+        get() = R.layout.edit_image_fragment
 
     private lateinit var preview: ImageView
     private lateinit var tags: RecyclerView
@@ -56,7 +58,7 @@ class EditTagsFragment: BaseFragment() {
 
     private lateinit var tagsAdapter: TagsAdapter
 
-    private val viewModel: EditTagsViewModel by getViewModel(EditTagsViewModel::class.java)
+    private val viewModel: EditImageViewModel by getViewModel(EditImageViewModel::class.java)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = super.onCreateView(inflater, container, savedInstanceState)!!
@@ -67,6 +69,19 @@ class EditTagsFragment: BaseFragment() {
         save = view.findViewById(R.id.button_save)
 
         tags.layoutManager = LinearLayoutManager(activity)
+        tagsAdapter = TagsAdapter().also { adapter ->
+            adapter.getIsEmptyLiveData().observeForever {
+                save.isEnabled = it == false
+            }
+        }
+
+        tags.adapter = tagsAdapter
+        AppItemTouchHelper(
+                tagsAdapter,
+                ItemTouchHelper.ACTION_STATE_DRAG,
+                ItemTouchHelper.DOWN or ItemTouchHelper.UP,
+                true)
+                .attachToRecyclerView(tags)
 
         cancel.setOnClickListener{ navController.popBackStack() }
         save.setOnClickListener {
@@ -77,16 +92,8 @@ class EditTagsFragment: BaseFragment() {
         return view
     }
 
-    override fun onViewIsLaidOut() {
-        super.onViewIsLaidOut()
-
-        tagsAdapter = TagsAdapter().apply {
-            getIsEmptyLiveData().observeForever {
-                save.isEnabled = it == false
-            }
-        }
-        tags.adapter = tagsAdapter
-
+    override fun onResume() {
+        super.onResume()
         observeData()
         if (isJustCreated()) {
             when{
@@ -96,6 +103,11 @@ class EditTagsFragment: BaseFragment() {
                     viewModel.loadTaggedImage(arguments!!.getString(ARG_KEY_IMAGE_ID)!!)
             }
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        viewModel.updateTagsOrdering(tagsAdapter.items)
     }
 
     private fun observeData() {
@@ -119,7 +131,7 @@ class EditTagsFragment: BaseFragment() {
         viewModel.imageTags.observe(
                 this,
                 Observer {
-                    tagsAdapter.items = it
+                    tagsAdapter.items = it.toMutableList()
                 }
         )
     }

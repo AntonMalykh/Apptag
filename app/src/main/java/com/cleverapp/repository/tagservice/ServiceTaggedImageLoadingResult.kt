@@ -2,7 +2,6 @@ package com.cleverapp.repository.tagservice
 
 import com.cleverapp.repository.TaggedImageLoadingResult
 import com.cleverapp.repository.data.ImageTag
-import com.cleverapp.repository.tagservice.response.GetImageTagResponse
 import java.util.ArrayList
 
 class ServiceTaggedImageLoadingResult(
@@ -27,8 +26,9 @@ class ServiceTaggedImageLoadingResult(
     private fun stringsToImageTags(strings: Collection<String>?): List<ImageTag> {
         if (strings == null)
             return emptyList()
+        var ordinalNum = 0
         return strings.fold(ArrayList(strings.size)){ acc, tag ->
-            acc.add(ImageTag(imageId, tag))
+            acc.add(ImageTag(imageId, tag, ordinalNum = ordinalNum++))
             acc
         }
     }

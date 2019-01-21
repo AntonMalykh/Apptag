@@ -3,13 +3,14 @@ package com.cleverapp.ui.viewmodels
 import android.app.Application
 import android.net.Uri
 import android.text.TextUtils
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.cleverapp.repository.TaggedImageLoadingResult
 import com.cleverapp.repository.data.ImageTag
 import com.cleverapp.repository.data.TaggedImage
 
-class EditTagsViewModel(app: Application): BaseViewModel(app) {
+class EditImageViewModel(app: Application): BaseViewModel(app) {
 
     private val imageTagResultObserver: Observer<TaggedImageLoadingResult> =
             Observer {
@@ -26,18 +27,19 @@ class EditTagsViewModel(app: Application): BaseViewModel(app) {
     val imageTags = MutableLiveData<List<ImageTag>>()
     val error = MutableLiveData<String>()
 
-    init {
-        repository.observeTagLoaded(imageTagResultObserver)
-    }
+    private var tagLoading: LiveData<TaggedImageLoadingResult>? = null
 
     fun loadTaggedImage(imageUri: Uri) {
         isLoadingTags.value = true
-        repository.loadNewTaggedImage(imageUri)
+        tagLoading = repository.loadNewTaggedImage(imageUri)
+        tagLoading?.observeForever(imageTagResultObserver)
+
     }
 
     fun loadTaggedImage(imageId: String) {
         isLoadingTags.value = true
-        repository.loadSavedTaggedImage(imageId)
+        tagLoading = repository.getSavedTaggedImage(imageId)
+        tagLoading?.observeForever(imageTagResultObserver)
     }
 
     fun onSaveClicked() {
@@ -48,8 +50,13 @@ class EditTagsViewModel(app: Application): BaseViewModel(app) {
                         imageTags.value!!))
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        repository.observeTagLoaded(imageTagResultObserver)
+    fun updateTagsOrdering(currentUiOrder: List<ImageTag>) {
+        val changedIndices = ArrayList<ImageTag>(currentUiOrder.size)
+        for (i in currentUiOrder.indices) {
+            val tag = currentUiOrder[i]
+            if (tag.ordinalNum != i)
+                changedIndices.add(tag.apply { this.ordinalNum = i })
+        }
+        repository.updateImageTags(changedIndices)
     }
 }

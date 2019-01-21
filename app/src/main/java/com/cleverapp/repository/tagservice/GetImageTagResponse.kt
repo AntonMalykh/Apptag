@@ -1,4 +1,4 @@
-package com.cleverapp.repository.tagservice.response
+package com.cleverapp.repository.tagservice
 
 class GetImageTagResponse private constructor(
         val requestImageBytes: ByteArray,

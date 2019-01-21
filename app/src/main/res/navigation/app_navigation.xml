@@ -13,12 +13,15 @@
         tools:layout="@layout/history_fragment">
         <action
             android:id="@+id/navigate_history_to_editTags"
-            app:destination="@id/editTagsFragment" app:popUpTo="@id/historyFragment"/>
+            app:destination="@id/editTagsFragment"
+            app:enterAnim="@anim/edit_tags_enter"
+            app:exitAnim="@anim/edit_tags_exit"
+            app:popExitAnim="@anim/edit_tags_exit"/>
     </fragment>
     <fragment
         android:id="@+id/editTagsFragment"
-        android:name="com.cleverapp.ui.EditTagsFragment"
+        android:name="com.cleverapp.ui.EditImageFragment"
         android:label="EditTagsFragment"
-        tools:layout="@layout/edit_tags_fragment">
+        tools:layout="@layout/edit_image_fragment">
     </fragment>
 </navigation>

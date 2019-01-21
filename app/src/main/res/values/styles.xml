@@ -7,6 +7,5 @@
 
     <style name="ButtonDefault" parent="Widget.MaterialComponents.Button.OutlinedButton">
         <item name="android:textSize">@dimen/text_size_medium</item>
-        <item name="android:textAllCaps">true</item>
     </style>
 </resources>

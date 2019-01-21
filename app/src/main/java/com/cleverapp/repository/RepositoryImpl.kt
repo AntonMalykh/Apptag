@@ -6,6 +6,7 @@ import android.provider.MediaStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import com.cleverapp.repository.data.ImageTag
 import com.cleverapp.repository.data.TaggedImage
 import com.cleverapp.repository.database.AppDatabase
 import com.cleverapp.repository.database.DatabaseHelper
@@ -24,45 +25,42 @@ class RepositoryImpl(
 
     private val databaseHelper = DatabaseHelper(database)
 
-    private var tagLoadedObserver: Observer<TaggedImageLoadingResult>? = null
     private val taggedImagesUpdated = MutableLiveData<Boolean>()
-
-    override fun observeTagLoaded(observer: Observer<TaggedImageLoadingResult>) {
-        tagLoadedObserver = observer
-    }
-
-    override fun removeTagLoadedObserver(observer: Observer<TaggedImageLoadingResult>) {
-        tagLoadedObserver = null
-    }
 
     override fun getTaggedImagesChangedLiveData(): LiveData<Boolean> {
         return taggedImagesUpdated
     }
 
-    override fun loadNewTaggedImage(uri: Uri) {
+    override fun loadNewTaggedImage(uri: Uri): LiveData<TaggedImageLoadingResult> {
+        val data = MutableLiveData<TaggedImageLoadingResult>()
         tagService.getImageTags(
                 getImageBytes(uri),
                 // worker thread
                 Observer { getImageTagResponse ->
-                    tagLoadedObserver?.onChanged(
+                    data.postValue(
                             ServiceTaggedImageLoadingResult(
                                     UUID.randomUUID().toString(),
                                     getImageTagResponse))
                 })
+        return data
     }
 
-    override fun loadSavedTaggedImage(imageId: String) {
-        tagLoadedObserver?.onChanged(
-                DatabaseTaggedImageLoadingResult(databaseHelper.getTaggedImage(imageId)))
+    override fun getSavedTaggedImage(imageId: String): LiveData<TaggedImageLoadingResult> {
+        val data = MutableLiveData<TaggedImageLoadingResult>()
+        data.value =
+                DatabaseTaggedImageLoadingResult(databaseHelper.getTaggedImage(imageId))
+        return data
     }
 
     override fun saveTaggedImage(taggedImage: TaggedImage) {
+        taggedImage.ordinalNum = databaseHelper.getAllTaggedImages().size
         databaseHelper.insertTaggedImage(taggedImage)
         taggedImagesUpdated.value = true
     }
 
-    override fun getSavedTaggedImages(): List<TaggedImage> {
-        return databaseHelper.getAllTaggedImages()
+    override fun getSavedTaggedImages(): LiveData<List<TaggedImage>> {
+        return MutableLiveData<List<TaggedImage>>()
+                .also { it.value = databaseHelper.getAllTaggedImages() }
     }
 
     override fun deleteSavedTaggedImage(image: TaggedImage) {
@@ -70,15 +68,24 @@ class RepositoryImpl(
         taggedImagesUpdated.value = true
     }
 
-    private fun getImageBytes(uri: Uri): ByteArray {
-        val c = contentResolver.query(uri, null, null, null, null)
+    override fun updateTaggedImages(imagesToUpdate: List<TaggedImage>) {
+        databaseHelper.updateTaggedImages(imagesToUpdate)
+    }
 
-        c?.let {
+
+    override fun updateImageTags(tagsToUpdate: List<ImageTag>) {
+        databaseHelper.updateImageTags(tagsToUpdate)
+    }
+
+    private fun getImageBytes(uri: Uri): ByteArray {
+        val cursor = contentResolver.query(uri, null, null, null, null)
+
+        cursor?.let {
             var size = 0
-            if (c.moveToFirst()) {
-                size = c.getInt(c.getColumnIndex(MediaStore.MediaColumns.SIZE))
+            if (cursor.moveToFirst()) {
+                size = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns.SIZE))
             }
-            c.close()
+            cursor.close()
             return if (size > MAX_THUMBNAIL_IMAGE_FILE_SIZE)
                 compressImage(contentResolver.openInputStream(uri), MAX_THUMBNAIL_IMAGE_FILE_SIZE)
             else

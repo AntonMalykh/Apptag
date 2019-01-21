@@ -4,9 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 
-abstract class BaseAdapter<Item, Holder: BaseViewHolder>: RecyclerView.Adapter<Holder>() {
+abstract class BaseAdapter<Item>: RecyclerView.Adapter<BaseViewHolder<Item>>() {
 
-    var items: List<Item> = emptyList()
+    open var items: MutableList<Item> = mutableListOf()
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -23,9 +23,7 @@ abstract class BaseAdapter<Item, Holder: BaseViewHolder>: RecyclerView.Adapter<H
         return items.size
     }
 
-    override fun onBindViewHolder(holder: Holder, position: Int) {
-        bindViewHolder(holder, items[position])
+    override fun onBindViewHolder(holder: BaseViewHolder<Item>, position: Int) {
+        holder.bindItem(items[position])
     }
-
-    protected abstract fun bindViewHolder(holder: Holder, item: Item)
 }
