@@ -6,34 +6,25 @@ import android.widget.TextView
 import com.cleverapp.R
 import com.cleverapp.repository.data.ImageTag
 
-private const val ADD_STUB_IMAGE_ID = "ADD"
-private val ADD_STUB = ImageTag(ADD_STUB_IMAGE_ID)
-
-private const val VIEW_TYPE_ADD_STUB = 0
-private const val VIEW_TYPE_TAG = 1
 
 class TagsAdapter: BaseAdapter<ImageTag>() {
 
-    override var items = super.items
-        get() {
-            return if (field.isEmpty()) field else field.subList(1, field.size)
-        }
-        set(value) {
-            field = value
-            items.add(0, ADD_STUB)
-            notifyDataSetChanged()
-        }
+    private var tagRemovedCallback: ((ImageTag) -> Unit)? = null
+    private var editTagClickedCallback: ((ImageTag) -> Unit)? = null
 
-    override fun getItemViewType(position: Int): Int {
-        return if (position == 0) VIEW_TYPE_ADD_STUB else VIEW_TYPE_TAG
+    fun setOnTagRemovedCallback(callback:(ImageTag) -> Unit) {
+        tagRemovedCallback = callback
+    }
+
+    fun setOnEditTagClickedCallback(callback: (ImageTag) -> Unit) {
+        editTagClickedCallback = callback
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder<ImageTag> {
-        return if (viewType == VIEW_TYPE_ADD_STUB) AddStubViewHolder(parent)
-            else TagViewHolder(parent)
+        return TagViewHolder(parent)
     }
 
-    class TagViewHolder(parent: ViewGroup):
+    inner class TagViewHolder(parent: ViewGroup):
             BaseViewHolder<ImageTag>(
                     parent,
                     R.layout.tag_view_holder) {
@@ -45,7 +36,7 @@ class TagsAdapter: BaseAdapter<ImageTag>() {
         override fun bindItem(item: ImageTag) {
             tag.text = item.tag
             edit.setOnClickListener {
-                // TODO implement
+                editTagClickedCallback?.invoke(item)
             }
             move.setOnTouchListener { v, event ->
                 // TODO implement
@@ -53,17 +44,4 @@ class TagsAdapter: BaseAdapter<ImageTag>() {
             }
         }
     }
-
-    class AddStubViewHolder(parent: ViewGroup) :
-            BaseViewHolder<ImageTag>(
-                    parent,
-                    R.layout.add_tag_holder) {
-
-        init {
-            itemView.setOnClickListener {
-                // TODO implement
-            }
-        }
-    }
-
 }

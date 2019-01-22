@@ -1,14 +1,19 @@
 package com.cleverapp.ui.recyclerview
 
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.PopupMenu
+import android.widget.TextView
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.TransitionOptions
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.request.RequestOptions
 import com.cleverapp.R
 import com.cleverapp.repository.data.TaggedImage
 import com.cleverapp.utils.toPlainText
+import java.util.*
 
 class HistoryAdapter: BaseAdapter<TaggedImage>() {
 
@@ -31,6 +36,30 @@ class HistoryAdapter: BaseAdapter<TaggedImage>() {
             holder.itemView.layoutParams = it.getLayoutParams()
         }
         return holder
+    }
+
+    override fun createTouchHelper(): ItemTouchHelper.Callback? {
+        return object: ItemTouchHelper.Callback(){
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                // not supported
+            }
+
+            override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
+                return makeFlag(
+                        ItemTouchHelper.ACTION_STATE_DRAG,
+                        ItemTouchHelper.DOWN
+                                or ItemTouchHelper.UP
+                                or ItemTouchHelper.START
+                                or ItemTouchHelper.END)
+            }
+
+            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+                Collections.swap(getItems(), viewHolder.adapterPosition, target.adapterPosition)
+                notifyItemMoved(viewHolder.adapterPosition, target.adapterPosition)
+                return true
+            }
+
+        }
     }
 
     inner class HistoryViewHolder(parent: ViewGroup):

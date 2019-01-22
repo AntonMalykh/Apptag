@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.cleverapp.R
+import com.cleverapp.repository.data.ImageTag
 import com.cleverapp.ui.recyclerview.AppItemTouchHelper
 import com.cleverapp.ui.recyclerview.TagsAdapter
 import com.cleverapp.ui.viewmodels.EditImageViewModel
@@ -73,6 +74,7 @@ class EditImageFragment: BaseFragment() {
             adapter.getIsEmptyLiveData().observeForever {
                 save.isEnabled = it == false
             }
+            adapter.setOnEditTagClickedCallback { imageTag -> onEditTagClicked(imageTag) }
         }
 
         tags.adapter = tagsAdapter
@@ -92,6 +94,10 @@ class EditImageFragment: BaseFragment() {
         return view
     }
 
+    private fun onEditTagClicked(imageTag: ImageTag) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     override fun onResume() {
         super.onResume()
         observeData()
@@ -107,7 +113,7 @@ class EditImageFragment: BaseFragment() {
 
     override fun onPause() {
         super.onPause()
-        viewModel.updateTagsOrdering(tagsAdapter.items)
+        viewModel.updateTagsOrdering(tagsAdapter.getItems())
     }
 
     private fun observeData() {
@@ -131,7 +137,7 @@ class EditImageFragment: BaseFragment() {
         viewModel.imageTags.observe(
                 this,
                 Observer {
-                    tagsAdapter.items = it.toMutableList()
+                    tagsAdapter.setItems(it)
                 }
         )
     }

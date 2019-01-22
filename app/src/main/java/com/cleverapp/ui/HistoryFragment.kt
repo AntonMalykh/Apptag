@@ -91,14 +91,9 @@ class HistoryFragment: BaseFragment() {
 
         layoutManager = GridLayoutManager(activity, HistoryViewMode.SingleColumn.spanCount)
 
-        AppItemTouchHelper(
-                historyAdapter,
-                ItemTouchHelper.ACTION_STATE_DRAG,
-                ItemTouchHelper.DOWN
-                        or ItemTouchHelper.UP
-                        or ItemTouchHelper.START
-                        or ItemTouchHelper.END)
-                .attachToRecyclerView(history)
+        historyAdapter.getItemTouchCallback()?.let {
+            ItemTouchHelper(it).attachToRecyclerView(history)
+        }
 
         fab.setOnClickListener { openFileChooser() }
 
@@ -107,7 +102,7 @@ class HistoryFragment: BaseFragment() {
 
     override fun onPause() {
         super.onPause()
-        viewModel.updateImageOrdering(historyAdapter.items)
+        viewModel.updateImageOrdering(historyAdapter.getItems())
     }
 
     private fun applyViewMode(mode: HistoryViewMode): Boolean {
@@ -138,7 +133,7 @@ class HistoryFragment: BaseFragment() {
     private fun observeViewModel() {
         viewModel.getImagesLiveData().observe(
                 this,
-                Observer { historyAdapter.items = it.toMutableList() })
+                Observer { historyAdapter.setItems(it) })
 
         viewModel.getViewModeLiveData().observe(this, Observer { applyViewMode(it) })
     }
