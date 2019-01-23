@@ -7,22 +7,17 @@ import androidx.recyclerview.widget.RecyclerView
 
 abstract class BaseAdapter<Item>: RecyclerView.Adapter<BaseViewHolder<Item>>() {
 
-    private var items: MutableList<Item> = mutableListOf()
+    protected var itemsList: MutableList<Item> = mutableListOf()
     private val isEmpty: MutableLiveData<Boolean> = MutableLiveData()
-
-    protected val holderTouchCallback: ItemTouchHelper.Callback? by lazy { createTouchHelper() }
-
-    protected open fun createTouchHelper(): ItemTouchHelper.Callback? {
-        return null
-    }
+    open val itemTouchHelper: ItemTouchHelper? = null
 
     fun setItems(items: List<Item>) {
-        this.items = items.toMutableList()
+        this.itemsList = items.toMutableList()
         notifyDataSetChanged()
     }
 
     fun getItems(): List<Item> {
-        return items
+        return itemsList
     }
 
     fun getIsEmptyLiveData(): LiveData<Boolean> {
@@ -30,15 +25,11 @@ abstract class BaseAdapter<Item>: RecyclerView.Adapter<BaseViewHolder<Item>>() {
     }
 
     override fun getItemCount(): Int {
-        isEmpty.value = items.isEmpty()
-        return items.size
+        isEmpty.value = itemsList.isEmpty()
+        return itemsList.size
     }
 
     override fun onBindViewHolder(holder: BaseViewHolder<Item>, position: Int) {
-        holder.bindItem(items[position])
-    }
-
-    fun getItemTouchCallback(): ItemTouchHelper.Callback? {
-        return holderTouchCallback
+        holder.bindItem(itemsList[position])
     }
 }

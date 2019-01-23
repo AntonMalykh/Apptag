@@ -17,17 +17,42 @@ import java.util.*
 
 class HistoryAdapter: BaseAdapter<TaggedImage>() {
 
-    private var onImageClickListener: OnImageClickListener? = null
+    private var onImageClickListener: ((TaggedImage) -> Unit)? = null
     private var onMenuClickListener: OnImageMenuClickListener? = null
 
     var layoutParamsProvider: LayoutParamsProvider? = null
+
+    override val itemTouchHelper = ItemTouchHelper(
+            object: ItemTouchHelper.Callback(){
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                    // not supported
+                }
+
+                override fun getMovementFlags(recyclerView: RecyclerView,
+                                              viewHolder: RecyclerView.ViewHolder): Int {
+                    return makeFlag(
+                            ItemTouchHelper.ACTION_STATE_DRAG,
+                            ItemTouchHelper.DOWN
+                                    or ItemTouchHelper.UP
+                                    or ItemTouchHelper.START
+                                    or ItemTouchHelper.END)
+                }
+
+                override fun onMove(recyclerView: RecyclerView,
+                                    viewHolder: RecyclerView.ViewHolder,
+                                    target: RecyclerView.ViewHolder): Boolean {
+                    Collections.swap(getItems(), viewHolder.adapterPosition, target.adapterPosition)
+                    notifyItemMoved(viewHolder.adapterPosition, target.adapterPosition)
+                    return true
+                }
+    })
 
     fun setOnMenuClickListener(onMenuClickListener: OnImageMenuClickListener) {
         this.onMenuClickListener = onMenuClickListener
     }
 
-    fun setOnImageClickListener(onImageClickListener: OnImageClickListener) {
-        this.onImageClickListener = onImageClickListener
+    fun setOnImageClickListener(listener: (TaggedImage) -> Unit) {
+        this.onImageClickListener = listener
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder<TaggedImage> {
@@ -36,30 +61,6 @@ class HistoryAdapter: BaseAdapter<TaggedImage>() {
             holder.itemView.layoutParams = it.getLayoutParams()
         }
         return holder
-    }
-
-    override fun createTouchHelper(): ItemTouchHelper.Callback? {
-        return object: ItemTouchHelper.Callback(){
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                // not supported
-            }
-
-            override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
-                return makeFlag(
-                        ItemTouchHelper.ACTION_STATE_DRAG,
-                        ItemTouchHelper.DOWN
-                                or ItemTouchHelper.UP
-                                or ItemTouchHelper.START
-                                or ItemTouchHelper.END)
-            }
-
-            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
-                Collections.swap(getItems(), viewHolder.adapterPosition, target.adapterPosition)
-                notifyItemMoved(viewHolder.adapterPosition, target.adapterPosition)
-                return true
-            }
-
-        }
     }
 
     inner class HistoryViewHolder(parent: ViewGroup):
@@ -77,7 +78,7 @@ class HistoryAdapter: BaseAdapter<TaggedImage>() {
                     .apply(RequestOptions.centerCropTransform())
                     .transition(DrawableTransitionOptions.withCrossFade())
                     .into(preview)
-            itemView.setOnClickListener{ onImageClickListener?.onImageClicked(item) }
+            itemView.setOnClickListener{ onImageClickListener?.invoke(item) }
             tags.text = item.tags.toPlainText()
             menu.setOnClickListener {
                 val menu = PopupMenu(menu.context, menu)
@@ -105,8 +106,4 @@ class HistoryAdapter: BaseAdapter<TaggedImage>() {
 interface OnImageMenuClickListener {
     fun onRemoveClicked(image: TaggedImage)
     fun onCopyClicked(image: TaggedImage)
-}
-
-interface OnImageClickListener {
-    fun onImageClicked(image: TaggedImage)
 }

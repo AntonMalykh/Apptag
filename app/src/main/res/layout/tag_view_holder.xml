@@ -32,7 +32,7 @@
         tools:text="@tools:sample/cities" />
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/edit"
+        android:id="@+id/move"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:paddingStart="@dimen/offset_small"
@@ -44,13 +44,13 @@
         app:srcCompat="@drawable/ic_reorder_black" />
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/move"
+        android:id="@+id/edit"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:paddingStart="@dimen/offset_small"
         android:paddingEnd="@dimen/offset_small"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/edit"
+        app:layout_constraintEnd_toStartOf="@+id/move"
         app:layout_constraintTop_toTopOf="parent"
         android:background="?android:selectableItemBackground"
         app:srcCompat="@drawable/ic_edit_black" />

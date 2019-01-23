@@ -59,4 +59,9 @@ abstract class BaseFragment: Fragment() {
     protected fun isJustCreated(): Boolean {
         return isJustCreated
     }
+
+    override fun onPause() {
+        super.onPause()
+        isJustCreated = false
+    }
 }

@@ -42,21 +42,20 @@ class EditImageViewModel(app: Application): BaseViewModel(app) {
         tagLoading?.observeForever(imageTagResultObserver)
     }
 
-    fun onSaveClicked() {
-        repository.saveTaggedImage(
-                TaggedImage(
-                        imageTags.value!!.first().imageId,
-                        imageBytes.value!!,
-                        imageTags.value!!))
+    fun saveImageTags(isNewImage: Boolean, currentUiOrder: List<ImageTag>) {
+        if (isNewImage)
+            repository.saveTaggedImage(
+                    TaggedImage(
+                            imageTags.value!!.first().imageId,
+                            imageBytes.value!!,
+                            imageTags.value!!))
+        else
+            updateTagsOrdering(currentUiOrder)
     }
 
-    fun updateTagsOrdering(currentUiOrder: List<ImageTag>) {
-        val changedIndices = ArrayList<ImageTag>(currentUiOrder.size)
-        for (i in currentUiOrder.indices) {
-            val tag = currentUiOrder[i]
-            if (tag.ordinalNum != i)
-                changedIndices.add(tag.apply { this.ordinalNum = i })
-        }
-        repository.updateImageTags(changedIndices)
+    private fun updateTagsOrdering(currentUiOrder: List<ImageTag>) {
+        for (i in currentUiOrder.indices)
+            currentUiOrder[i].ordinalNum = i
+        repository.updateImageTags(currentUiOrder)
     }
 }

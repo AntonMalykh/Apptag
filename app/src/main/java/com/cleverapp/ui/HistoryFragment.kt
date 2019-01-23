@@ -59,12 +59,6 @@ class HistoryFragment: BaseFragment() {
 
     }
 
-    private val onImageClickListener: OnImageClickListener = object : OnImageClickListener {
-        override fun onImageClicked(image: TaggedImage) {
-            navController.navigate(NavigationDirections.historyToEditSavedImage(image.id))
-        }
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = super.onCreateView(inflater, container, savedInstanceState)!!
         toolbar = view.findViewById(R.id.toolbar)
@@ -84,20 +78,22 @@ class HistoryFragment: BaseFragment() {
         historyAdapter = HistoryAdapter()
                 .also { adapter ->
                     adapter.setOnMenuClickListener(onMenuClickListener)
-                    adapter.setOnImageClickListener(onImageClickListener)
+                    adapter.setOnImageClickListener { taggedImage -> onImageClicked(taggedImage) }
                     adapter.getIsEmptyLiveData()
                             .observeForever { history.visibility = if (it) GONE else VISIBLE }
                 }
 
         layoutManager = GridLayoutManager(activity, HistoryViewMode.SingleColumn.spanCount)
 
-        historyAdapter.getItemTouchCallback()?.let {
-            ItemTouchHelper(it).attachToRecyclerView(history)
-        }
+        historyAdapter.itemTouchHelper.attachToRecyclerView(history)
 
         fab.setOnClickListener { openFileChooser() }
 
         return view
+    }
+
+    private fun onImageClicked(taggedImage: TaggedImage) {
+        navController.navigate(NavigationDirections.historyToEditSavedImage(taggedImage.id))
     }
 
     override fun onPause() {
