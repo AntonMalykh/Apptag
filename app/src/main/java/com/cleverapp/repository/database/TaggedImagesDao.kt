@@ -9,10 +9,16 @@ interface TaggedImagesDao {
 
     // IMAGES
 
-    @Query("SELECT * FROM ${AppDatabase.TAGGED_IMAGES_TABLE_NAME} ORDER BY ${TaggedImage.COLUMN_NAME_ORDINAL_NUM} DESC")
+    @Query("""
+        SELECT *
+        FROM ${AppDatabase.TAGGED_IMAGES_TABLE_NAME}
+        ORDER BY ${TaggedImage.COLUMN_NAME_ORDINAL_NUM} DESC""")
     fun getAllTaggedImages(): List<TaggedImage>
 
-    @Query("SELECT * FROM ${AppDatabase.TAGGED_IMAGES_TABLE_NAME} WHERE ${TaggedImage.COLUMN_NAME_ID} = :imageId")
+    @Query("""
+        SELECT *
+        FROM ${AppDatabase.TAGGED_IMAGES_TABLE_NAME}
+        WHERE ${TaggedImage.COLUMN_NAME_ID} = :imageId""")
     fun getTaggedImage(imageId: String): TaggedImage
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -26,7 +32,11 @@ interface TaggedImagesDao {
 
     // TAGS
 
-    @Query("SELECT * FROM ${AppDatabase.IMAGE_TAGS_TABLE_NAME} WHERE ${ImageTag.COLUMN_NAME_IMAGE_ID} = :imageId ORDER BY ${ImageTag.COLUMN_NAME_ORDINAL_NUM} ASC")
+    @Query("""
+        SELECT *
+        FROM ${AppDatabase.IMAGE_TAGS_TABLE_NAME}
+        WHERE ${ImageTag.COLUMN_NAME_IMAGE_ID} = :imageId
+        ORDER BY ${ImageTag.COLUMN_NAME_ORDINAL_NUM} ASC""")
     fun getTags(imageId: String): List<ImageTag>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

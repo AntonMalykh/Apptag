@@ -16,19 +16,18 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.cleverapp.R
 import com.cleverapp.repository.data.TaggedImage
 import com.cleverapp.ui.navigation.NavigationDirections
 import com.cleverapp.ui.recyclerview.*
 import com.cleverapp.ui.viewmodels.HistoryViewMode
-import com.cleverapp.ui.viewmodels.HistoryViewModel
+import com.cleverapp.ui.viewmodels.ImagesViewModel
 import com.cleverapp.utils.INTENT_IMAGE_TYPE
 import com.cleverapp.utils.toPlainText
 
 
-class HistoryFragment: BaseFragment() {
+class ImagesFragment: BaseFragment() {
 
     override val viewId: Int
         get() = R.layout.history_fragment
@@ -44,7 +43,7 @@ class HistoryFragment: BaseFragment() {
     private lateinit var layoutManager: GridLayoutManager
     private lateinit var itemDecoration: SpacesItemDecoration
 
-    private val viewModel: HistoryViewModel by getViewModel(HistoryViewModel::class.java)
+    private val viewModel: ImagesViewModel by getViewModel(ImagesViewModel::class.java)
 
     private var onMenuClickListener = object: OnImageMenuClickListener{
         override fun onRemoveClicked(image: TaggedImage) {

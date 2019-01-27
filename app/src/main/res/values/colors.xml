@@ -12,4 +12,5 @@
 
 
     <color name="text_on_image_background">#a0e1e1e1</color>
+    <color name="background_transparent">#CCFFFFFF</color>
 </resources>

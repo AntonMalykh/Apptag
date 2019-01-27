@@ -51,7 +51,7 @@ abstract class BaseFragment: Fragment() {
             activity?.let {
                 ViewModelProviders.of(
                         this,
-                        ViewModelFactory(it.application)).get(viewModelClass)
+                        ViewModelFactory(it.application, arguments)).get(viewModelClass)
             } ?: throw IllegalStateException("Invalid activity (null)")
         }
     }
@@ -64,4 +64,6 @@ abstract class BaseFragment: Fragment() {
         super.onPause()
         isJustCreated = false
     }
+
+    open fun onBackPressed(): Boolean = false
 }

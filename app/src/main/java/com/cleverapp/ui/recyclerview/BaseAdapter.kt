@@ -32,4 +32,10 @@ abstract class BaseAdapter<Item>: RecyclerView.Adapter<BaseViewHolder<Item>>() {
     override fun onBindViewHolder(holder: BaseViewHolder<Item>, position: Int) {
         holder.bindItem(itemsList[position])
     }
+
+    fun appendItems(items: List<Item>){
+        val sizeBefore = itemsList.size
+        itemsList.addAll(items)
+        notifyItemRangeInserted(sizeBefore, items.size)
+    }
 }

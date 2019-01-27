@@ -3,8 +3,8 @@ package com.cleverapp.ui.navigation
 import android.net.Uri
 import androidx.navigation.NavDirections
 import com.cleverapp.R
-import com.cleverapp.ui.EditImageFragment.Companion.getArgsForNewImage
-import com.cleverapp.ui.EditImageFragment.Companion.getArgsForSavedImage
+import com.cleverapp.ui.TagsFragment.Companion.getArgsForNewImage
+import com.cleverapp.ui.TagsFragment.Companion.getArgsForSavedImage
 
 class NavigationDirections{
 

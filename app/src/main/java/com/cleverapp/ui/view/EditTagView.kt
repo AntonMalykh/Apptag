@@ -28,6 +28,10 @@ class EditTagView @JvmOverloads constructor(
         ok.setOnClickListener(listener)
     }
 
+    fun setOnEmptySpaceClickListner(listener: (View) -> Unit) {
+        setOnClickListener(listener)
+    }
+
     override fun requestFocus(direction: Int, previouslyFocusedRect: Rect?): Boolean {
         return input.requestFocus()
     }

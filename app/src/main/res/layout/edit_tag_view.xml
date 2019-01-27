@@ -4,21 +4,24 @@
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?android:colorBackground"
+    android:background="@color/background_transparent"
     android:gravity="center">
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/input"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:theme="@style/Widget.MaterialComponents.TextInputEditText.OutlinedBox"
+        android:gravity="center"
         android:minWidth="100dp"/>
 
-    <androidx.appcompat.widget.AppCompatImageView
+    <androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/ok"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="@dimen/button_height_default"
+        android:layout_height="@dimen/button_height_default"
         android:background="?android:selectableItemBackground"
+        android:theme="@style/Widget.MaterialComponents.Button.OutlinedButton"
         app:srcCompat="@drawable/ic_check_circle_accent"
-        android:scaleType="fitXY"/>
+        android:scaleType="centerInside"/>
 
 </LinearLayout>

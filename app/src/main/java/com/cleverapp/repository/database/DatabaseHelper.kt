@@ -41,7 +41,9 @@ class DatabaseHelper(val database: AppDatabase){
         database.taggedImagesDao().updateTaggedImages(imagesToUpdate)
     }
 
-    fun updateImageTags(tagsToUpdate: List<ImageTag>) {
-        database.taggedImagesDao().updateImageTags(tagsToUpdate)
+    fun updateImageTags(imageId: String, tags: List<ImageTag>) {
+        database.taggedImagesDao().deleteImageTags(
+                database.taggedImagesDao().getTags(imageId))
+        insertImageTags(tags)
     }
 }

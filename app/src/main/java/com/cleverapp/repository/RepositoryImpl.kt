@@ -10,7 +10,6 @@ import com.cleverapp.repository.data.ImageTag
 import com.cleverapp.repository.data.TaggedImage
 import com.cleverapp.repository.database.AppDatabase
 import com.cleverapp.repository.database.DatabaseHelper
-import com.cleverapp.repository.database.DatabaseTaggedImageLoadingResult
 import com.cleverapp.repository.tagservice.ServiceTaggedImageLoadingResult
 import com.cleverapp.repository.tagservice.TagService
 import com.cleverapp.utils.MAX_THUMBNAIL_IMAGE_FILE_SIZE
@@ -31,30 +30,32 @@ class RepositoryImpl(
         return taggedImagesUpdated
     }
 
-    override fun loadNewTaggedImage(uri: Uri): LiveData<TaggedImageLoadingResult> {
-        val data = MutableLiveData<TaggedImageLoadingResult>()
+    override fun getImageTags(imageBytes: ByteArray,
+                              requestedTagLanguage: String,
+                              requestedTagCount: Int)
+            : LiveData<ImageTagsLoadingResult> {
+
+        val data = MutableLiveData<ImageTagsLoadingResult>()
         tagService.getImageTags(
-                getImageBytes(uri),
+                imageBytes,
                 // worker thread
-                Observer { getImageTagResponse ->
-                    data.postValue(
-                            ServiceTaggedImageLoadingResult(
-                                    UUID.randomUUID().toString(),
-                                    getImageTagResponse))
-                })
+                Observer { data.postValue(ServiceTaggedImageLoadingResult(it)) })
+
         return data
     }
 
-    override fun getSavedTaggedImage(imageId: String): LiveData<TaggedImageLoadingResult> {
-        val data = MutableLiveData<TaggedImageLoadingResult>()
-        data.value =
-                DatabaseTaggedImageLoadingResult(databaseHelper.getTaggedImage(imageId))
+    override fun getSavedTaggedImage(imageId: String): LiveData<TaggedImage> {
+        val data = MutableLiveData<TaggedImage>()
+        data.value = databaseHelper.getTaggedImage(imageId)
         return data
     }
 
-    override fun saveTaggedImage(taggedImage: TaggedImage) {
-        taggedImage.ordinalNum = databaseHelper.getAllTaggedImages().size
-        databaseHelper.insertTaggedImage(taggedImage)
+    override fun saveTaggedImage(previewBytes: ByteArray, tags: List<ImageTag>) {
+        val id = UUID.randomUUID().toString()
+        tags.forEach { it.imageId = id }
+        val newImage = TaggedImage(id, previewBytes, tags)
+        newImage.ordinalNum = databaseHelper.getAllTaggedImages().size
+        databaseHelper.insertTaggedImage(newImage)
         taggedImagesUpdated.value = true
     }
 
@@ -73,11 +74,13 @@ class RepositoryImpl(
     }
 
 
-    override fun updateImageTags(tagsToUpdate: List<ImageTag>) {
-        databaseHelper.updateImageTags(tagsToUpdate)
+    override fun updateTaggedImage(imageId: String, newTags: List<ImageTag>) {
+        newTags.forEach { it.imageId = imageId }
+        databaseHelper.updateImageTags(imageId, newTags)
+        taggedImagesUpdated.value = true
     }
 
-    private fun getImageBytes(uri: Uri): ByteArray {
+    override fun getImageBytes(uri: Uri): ByteArray {
         val cursor = contentResolver.query(uri, null, null, null, null)
 
         cursor?.let {

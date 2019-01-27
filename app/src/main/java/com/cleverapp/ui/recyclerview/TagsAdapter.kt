@@ -15,16 +15,19 @@ import com.cleverapp.R
 import com.cleverapp.repository.data.ImageTag
 import java.util.*
 
+private const val VIEW_TYPE_TAG = 0
+private const val VIEW_TYPE_LOADING = 1
+private val ITEM_LOADING = ImageTag("", "", false, 0)
 
 class TagsAdapter: BaseAdapter<ImageTag>() {
 
-    private var onTagRemovedCallback: ((ImageTag) -> Unit)? = null
     private var onEditTagClickedCallback: ((ImageTag) -> Unit)? = null
 
     override val itemTouchHelper: ItemTouchHelper = ItemTouchHelper(
             object: ItemTouchHelper.Callback(){
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-
+                    itemsList.removeAt(viewHolder.adapterPosition)
+                    notifyItemRemoved(viewHolder.adapterPosition)
                 }
 
                 override fun getMovementFlags(recyclerView: RecyclerView,
@@ -32,12 +35,15 @@ class TagsAdapter: BaseAdapter<ImageTag>() {
                     return makeMovementFlags(
                             ItemTouchHelper.DOWN
                                     or ItemTouchHelper.UP,
-                            ItemTouchHelper.RIGHT)
+                            ItemTouchHelper.RIGHT
+                                    or ItemTouchHelper.LEFT)
                 }
 
                 override fun onMove(recyclerView: RecyclerView,
                                     viewHolder: RecyclerView.ViewHolder,
                                     target: RecyclerView.ViewHolder): Boolean {
+                    if (target.itemViewType == VIEW_TYPE_LOADING)
+                        return false
                     Collections.swap(getItems(), viewHolder.adapterPosition, target.adapterPosition)
                     notifyItemMoved(viewHolder.adapterPosition, target.adapterPosition)
                     return true
@@ -46,16 +52,20 @@ class TagsAdapter: BaseAdapter<ImageTag>() {
                 override fun isLongPressDragEnabled(): Boolean = false
             })
 
-    fun setOnTagRemovedCallback(callback:(ImageTag) -> Unit) {
-        onTagRemovedCallback = callback
-    }
-
     fun setOnEditTagClickedCallback(callback: (ImageTag) -> Unit) {
         onEditTagClickedCallback = callback
     }
 
+    override fun getItemViewType(position: Int): Int {
+        return if (position == itemsList.lastIndex
+                    && itemsList[position] == ITEM_LOADING)
+            VIEW_TYPE_LOADING
+        else
+            VIEW_TYPE_TAG
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder<ImageTag> {
-        return TagViewHolder(parent)
+        return if (viewType == VIEW_TYPE_LOADING) LoadingViewHolder(parent) else TagViewHolder(parent)
     }
 
     fun updateTag(tag: ImageTag) {
@@ -68,6 +78,24 @@ class TagsAdapter: BaseAdapter<ImageTag>() {
             itemsList.add(0, tag)
     }
 
+    fun setProgressEnabled(enabled: Boolean) {
+        with(itemsList) {
+            if (enabled) {
+                add(ITEM_LOADING)
+                notifyItemInserted(size - 1)
+            }
+            else if (!isEmpty() && last() == ITEM_LOADING) {
+                removeAt(size - 1)
+                notifyItemRemoved(size)
+            }
+        }
+    }
+
+    inner class LoadingViewHolder(parent: ViewGroup):
+            BaseViewHolder<Any>(
+                    parent,
+                    R.layout.progress_view_holder)
+
     inner class TagViewHolder(parent: ViewGroup):
             BaseViewHolder<ImageTag>(
                     parent,
@@ -79,9 +107,8 @@ class TagsAdapter: BaseAdapter<ImageTag>() {
 
         override fun bindItem(item: ImageTag) {
             tag.text = item.tag
-            edit.setOnClickListener {
-                onEditTagClickedCallback?.invoke(item)
-            }
+            tag.setTextColor(if (item.isCustom) Color.BLUE else Color.GRAY)
+            edit.setOnClickListener { onEditTagClickedCallback?.invoke(item) }
             move.setOnTouchListener {
                 _, event ->
                 if (event.action == MotionEvent.ACTION_DOWN) {

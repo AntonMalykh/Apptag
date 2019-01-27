@@ -9,17 +9,22 @@ interface Repository {
 
     fun getTaggedImagesChangedLiveData(): LiveData<Boolean>
 
-    fun loadNewTaggedImage(uri: Uri): LiveData<TaggedImageLoadingResult>
-
     fun getSavedTaggedImages(): LiveData<List<TaggedImage>>
 
     fun deleteSavedTaggedImage(image: TaggedImage)
 
-    fun saveTaggedImage(taggedImage: TaggedImage)
+    fun saveTaggedImage(previewBytes: ByteArray, tags: List<ImageTag>)
 
-    fun getSavedTaggedImage(imageId: String): LiveData<TaggedImageLoadingResult>
+    fun getSavedTaggedImage(imageId: String): LiveData<TaggedImage>
 
     fun updateTaggedImages(imagesToUpdate: List<TaggedImage>)
 
-    fun updateImageTags(tagsToUpdate: List<ImageTag>)
+    fun updateTaggedImage(imageId: String, newTags: List<ImageTag>)
+
+    fun getImageBytes(uri: Uri): ByteArray
+
+    fun getImageTags(imageBytes: ByteArray,
+                     requestedTagLanguage: String,
+                     requestedTagCount: Int)
+            : LiveData<ImageTagsLoadingResult>
 }

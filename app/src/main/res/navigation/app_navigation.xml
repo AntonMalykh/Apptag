@@ -8,7 +8,7 @@
 
     <fragment
         android:id="@+id/historyFragment"
-        android:name="com.cleverapp.ui.HistoryFragment"
+        android:name="com.cleverapp.ui.ImagesFragment"
         android:label="HistoryFragment"
         tools:layout="@layout/history_fragment">
         <action
@@ -20,8 +20,8 @@
     </fragment>
     <fragment
         android:id="@+id/editTagsFragment"
-        android:name="com.cleverapp.ui.EditImageFragment"
+        android:name="com.cleverapp.ui.TagsFragment"
         android:label="EditTagsFragment"
-        tools:layout="@layout/edit_image_fragment">
+        tools:layout="@layout/tags_fragment">
     </fragment>
 </navigation>

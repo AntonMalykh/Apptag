@@ -17,13 +17,13 @@ import com.cleverapp.R
 import com.cleverapp.repository.data.ImageTag
 import com.cleverapp.ui.recyclerview.TagsAdapter
 import com.cleverapp.ui.view.EditTagView
-import com.cleverapp.ui.viewmodels.EditImageViewModel
+import com.cleverapp.ui.viewmodels.TagsViewModel
 
-class EditImageFragment: BaseFragment() {
+class TagsFragment: BaseFragment() {
 
     companion object {
-        private const val ARG_KEY_URI = "ARG_KEY_URI"
-        private const val ARG_KEY_IMAGE_ID = "ARG_KEY_IMAGE_ID"
+        const val ARG_KEY_URI = "ARG_KEY_URI"
+        const val ARG_KEY_IMAGE_ID = "ARG_KEY_IMAGE_ID"
 
         private fun newBundle(uri: Uri?, imageId: String?): Bundle {
             return Bundle().also { bundle ->
@@ -42,13 +42,13 @@ class EditImageFragment: BaseFragment() {
             return newBundle(null, imageId)
         }
 
-        private fun isNewImage(args: Bundle): Boolean {
+        fun isNewImage(args: Bundle): Boolean {
             return args.containsKey(ARG_KEY_URI)
         }
     }
 
     override val viewId: Int
-        get() = R.layout.edit_image_fragment
+        get() = R.layout.tags_fragment
 
     private lateinit var preview: ImageView
     private lateinit var tags: RecyclerView
@@ -58,7 +58,7 @@ class EditImageFragment: BaseFragment() {
 
     private lateinit var tagsAdapter: TagsAdapter
 
-    private val viewModel: EditImageViewModel by getViewModel(EditImageViewModel::class.java)
+    private val viewModel: TagsViewModel by getViewModel(TagsViewModel::class.java)
 
     /**
      * tag that is currently being edited
@@ -87,19 +87,80 @@ class EditImageFragment: BaseFragment() {
 
         cancel.setOnClickListener{ navController.popBackStack() }
         save.setOnClickListener {
-            viewModel.saveImageTags(isNewImage(arguments!!), tagsAdapter.getItems())
+            viewModel.saveImageTags(tagsAdapter.getItems())
             navController.popBackStack()
         }
 
-        editInput.visibility = GONE
-        editInput.setOnOkClickedListener { finishEditTag() }
+        editInput.apply {
+            this.visibility = GONE
+            this.setOnOkClickedListener { finishEditTag(true) }
+            this.setOnEmptySpaceClickListner { finishEditTag(false) }
+        }
+
+        if (isNewImage(arguments!!))
+            Glide.with(this)
+                    .load(arguments!!.getParcelable(ARG_KEY_URI) as Uri)
+                    .apply(RequestOptions.centerCropTransform())
+                    .into(preview)
+
+        view.findViewById<View>(R.id.add).setOnClickListener { viewModel.loadTags("", 1) }
 
         return view
     }
 
-    private fun finishEditTag() {
-        currentEditedTag?.tag = editInput.getInput()
-        tagsAdapter.updateTag(currentEditedTag!!)
+    override fun onResume() {
+        super.onResume()
+        if (isJustCreated())
+            observeData()
+    }
+
+    override fun onBackPressed(): Boolean {
+        if (currentEditedTag != null) {
+            finishEditTag(false)
+            return true
+        }
+        return super.onBackPressed()
+    }
+
+    private fun observeData() {
+        if (!isNewImage(arguments!!))
+            viewModel.imageBytes.observe(
+                    this,
+                    Observer {
+                        Glide.with(this)
+                                .load(it)
+                                .apply(RequestOptions.centerCropTransform())
+                                .into(preview)
+                    }
+            )
+
+        viewModel.loading.observe(
+                this,
+                Observer { loading ->
+                    loading?.let {
+                        tagsAdapter.setProgressEnabled(it)
+                        tags.scrollToPosition(tagsAdapter.itemCount - 1)
+                    }
+                }
+        )
+
+        viewModel.imageTags.observe(
+                this,
+                Observer {
+                    tagsAdapter.appendItems(it)
+                }
+        )
+    }
+
+    private fun finishEditTag(applyResult: Boolean) {
+        if (currentEditedTag == null)
+            return
+        currentEditedTag?.let {
+            it.tag = editInput.getInput()
+            if (applyResult)
+                tagsAdapter.updateTag(it)
+            currentEditedTag = null
+        }
         editInput.visibility = GONE
         editInput.setText("")
     }
@@ -109,44 +170,5 @@ class EditImageFragment: BaseFragment() {
         editInput.setText(imageTag.tag)
         editInput.visibility = VISIBLE
         editInput.bringToFront()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (isJustCreated()) {
-            observeData()
-            when{
-                isNewImage(arguments!!) ->
-                    viewModel.loadTaggedImage(arguments!!.getParcelable(ARG_KEY_URI) as Uri)
-                else ->
-                    viewModel.loadTaggedImage(arguments!!.getString(ARG_KEY_IMAGE_ID)!!)
-            }
-        }
-    }
-
-    private fun observeData() {
-        viewModel.imageBytes.observe(
-                this,
-                Observer {
-                    Glide.with(this)
-                            .load(it)
-                            .apply(RequestOptions.centerCropTransform())
-                            .into(preview)
-                }
-        )
-
-        viewModel.isLoadingTags.observe(
-                this,
-                Observer {
-                    tags.visibility = if (it == true) INVISIBLE else VISIBLE
-                }
-        )
-
-        viewModel.imageTags.observe(
-                this,
-                Observer {
-                    tagsAdapter.setItems(it)
-                }
-        )
     }
 }

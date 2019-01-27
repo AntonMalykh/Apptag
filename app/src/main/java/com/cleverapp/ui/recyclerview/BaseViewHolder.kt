@@ -6,7 +6,7 @@ import androidx.annotation.LayoutRes
 import androidx.recyclerview.widget.RecyclerView
 
 
-abstract class BaseViewHolder<T>(
+abstract class BaseViewHolder<in T>(
         parent: ViewGroup,
         @LayoutRes layoutId: Int)
     : RecyclerView.ViewHolder(
