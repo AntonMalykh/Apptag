@@ -2,7 +2,7 @@ package com.cleverapp.repository
 
 import com.cleverapp.repository.data.ImageTag
 
-interface ImageTagsLoadingResult {
+interface TagsLoadingResult {
     fun getError(): String?
-    fun getImageTags(): List<ImageTag>?
+    fun getTags(): List<ImageTag>?
 }

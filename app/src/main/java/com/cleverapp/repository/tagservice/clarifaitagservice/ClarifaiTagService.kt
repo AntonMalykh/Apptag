@@ -7,6 +7,7 @@ import clarifai2.api.request.ClarifaiRequest
 import clarifai2.dto.input.ClarifaiInput
 import clarifai2.dto.model.output.ClarifaiOutput
 import clarifai2.dto.prediction.Concept
+import com.cleverapp.repository.Language
 import com.cleverapp.repository.tagservice.TagService
 import com.cleverapp.repository.tagservice.GetImageTagResponse
 
@@ -23,9 +24,15 @@ internal class ClarifaiTagService : TagService {
     }
 
     @Suppress("RedundantSamConstructor")
-    override fun getImageTags(imageBytes: ByteArray, consumer: Observer<GetImageTagResponse>) {
+    override fun getImageTags(imageBytes: ByteArray,
+                              tagsLanguage: Language,
+                              tagsCount: Int,
+                              consumer: Observer<GetImageTagResponse>) {
+
         client.defaultModels.generalModel().predict()
                 .withInputs(ClarifaiInput.forImage(imageBytes))
+                .withLanguage(tagsLanguage.code)
+                .withMaxConcepts(tagsCount)
                 .executeAsync(
                         ClarifaiRequest.OnSuccess {
                             consumer.onChanged(GetImageTagResponse.success(imageBytes, responseToTagList(it)))

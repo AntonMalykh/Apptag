@@ -31,16 +31,18 @@ class RepositoryImpl(
     }
 
     override fun getImageTags(imageBytes: ByteArray,
-                              requestedTagLanguage: String,
-                              requestedTagCount: Int)
-            : LiveData<ImageTagsLoadingResult> {
+                              tagsLanguage: Language,
+                              tagsCount: Int)
+            : LiveData<TagsLoadingResult> {
 
-        val data = MutableLiveData<ImageTagsLoadingResult>()
+        val data = MutableLiveData<TagsLoadingResult>()
         tagService.getImageTags(
                 imageBytes,
+                tagsLanguage,
+                tagsCount,
                 // worker thread
-                Observer { data.postValue(ServiceTaggedImageLoadingResult(it)) })
-
+                Observer { data.postValue(ServiceTaggedImageLoadingResult(it)) }
+        )
         return data
     }
 

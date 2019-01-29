@@ -24,7 +24,7 @@ interface Repository {
     fun getImageBytes(uri: Uri): ByteArray
 
     fun getImageTags(imageBytes: ByteArray,
-                     requestedTagLanguage: String,
-                     requestedTagCount: Int)
-            : LiveData<ImageTagsLoadingResult>
+                     tagsLanguage: Language,
+                     tagsCount: Int)
+            : LiveData<TagsLoadingResult>
 }

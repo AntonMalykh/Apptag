@@ -13,7 +13,6 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -25,6 +24,7 @@ import com.cleverapp.ui.viewmodels.HistoryViewMode
 import com.cleverapp.ui.viewmodels.ImagesViewModel
 import com.cleverapp.utils.INTENT_IMAGE_TYPE
 import com.cleverapp.utils.toPlainText
+import kotlinx.android.synthetic.main.history_fragment.*
 
 
 class ImagesFragment: BaseFragment() {
@@ -36,9 +36,6 @@ class ImagesFragment: BaseFragment() {
         const val PICK_IMAGE_REQUEST = 0
     }
 
-    private lateinit var toolbar: Toolbar
-    private lateinit var fab: View
-    private lateinit var history: RecyclerView
     private lateinit var historyAdapter: HistoryAdapter
     private lateinit var layoutManager: GridLayoutManager
     private lateinit var itemDecoration: SpacesItemDecoration
@@ -58,11 +55,8 @@ class ImagesFragment: BaseFragment() {
 
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = super.onCreateView(inflater, container, savedInstanceState)!!
-        toolbar = view.findViewById(R.id.toolbar)
-        fab = view.findViewById(R.id.fab)
-        history = view.findViewById(R.id.history)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         toolbar.title = "#" + resources.getString(activity?.applicationInfo?.labelRes!!)
         toolbar.inflateMenu(R.menu.history_fragment_menu)
@@ -87,8 +81,6 @@ class ImagesFragment: BaseFragment() {
         historyAdapter.itemTouchHelper.attachToRecyclerView(history)
 
         fab.setOnClickListener { openFileChooser() }
-
-        return view
     }
 
     private fun onImageClicked(taggedImage: TaggedImage) {

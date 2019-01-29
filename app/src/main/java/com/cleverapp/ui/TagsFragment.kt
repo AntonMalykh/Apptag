@@ -1,23 +1,22 @@
 package com.cleverapp.ui
 
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.View.*
-import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
+import android.view.View.GONE
+import android.view.View.VISIBLE
+import androidx.core.graphics.ColorUtils
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.cleverapp.R
 import com.cleverapp.repository.data.ImageTag
 import com.cleverapp.ui.recyclerview.TagsAdapter
-import com.cleverapp.ui.view.EditTagView
 import com.cleverapp.ui.viewmodels.TagsViewModel
+import com.google.android.material.appbar.AppBarLayout
+import kotlinx.android.synthetic.main.tags_fragment.*
 
 class TagsFragment: BaseFragment() {
 
@@ -50,34 +49,46 @@ class TagsFragment: BaseFragment() {
     override val viewId: Int
         get() = R.layout.tags_fragment
 
-    private lateinit var preview: ImageView
-    private lateinit var tags: RecyclerView
-    private lateinit var cancel: Button
-    private lateinit var save: Button
-    private lateinit var editInput: EditTagView
-
-    private lateinit var tagsAdapter: TagsAdapter
-
     private val viewModel: TagsViewModel by getViewModel(TagsViewModel::class.java)
 
+    private lateinit var tagsAdapter: TagsAdapter
     /**
      * tag that is currently being edited
      */
     private var currentEditedTag: ImageTag? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = super.onCreateView(inflater, container, savedInstanceState)!!
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        preview = view.findViewById(R.id.preview)
-        tags = view.findViewById(R.id.tags)
-        cancel = view.findViewById(R.id.button_cancel)
-        save = view.findViewById(R.id.button_save)
-        editInput = view.findViewById(R.id.edit_input)
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black)
+        toolbar.setNavigationOnClickListener { navController.popBackStack() }
+        toolbar.inflateMenu(R.menu.menu_fragment_tags)
+        toolbar.setOnMenuItemClickListener {
+            when {
+                it.isEnabled -> {
+                    viewModel.saveImageTags(tagsAdapter.getItems())
+                    navController.popBackStack()
+                    true
+                }
+                else -> false
+            }
+        }
+
+        app_bar_layout.addOnOffsetChangedListener(
+                AppBarLayout.OnOffsetChangedListener { _, offset ->
+                    // If toolbar expanded, it has blurry dark background.
+                    // If collapsed - white. To display icons correctly, you need to
+                    // change the color of the icons to opposite accordingly.
+                    val ratio = Math.abs(offset.toFloat() / app_bar_layout.totalScrollRange)
+                    val color = ColorUtils.blendARGB(Color.BLACK, Color.WHITE, ratio)
+                    toolbar.menu.findItem(R.id.done).icon.setTint(color)
+                    toolbar.navigationIcon?.setTint(color)
+                })
 
         tags.layoutManager = LinearLayoutManager(activity)
         tagsAdapter = TagsAdapter().also { adapter ->
             adapter.getIsEmptyLiveData().observeForever {
-                save.isEnabled = it == false
+                toolbar.menu.findItem(R.id.done).isEnabled = it == false
             }
             adapter.setOnEditTagClickedCallback { imageTag -> startEditTag(imageTag) }
         }
@@ -85,13 +96,7 @@ class TagsFragment: BaseFragment() {
         tags.adapter = tagsAdapter
         tagsAdapter.itemTouchHelper.attachToRecyclerView(tags)
 
-        cancel.setOnClickListener{ navController.popBackStack() }
-        save.setOnClickListener {
-            viewModel.saveImageTags(tagsAdapter.getItems())
-            navController.popBackStack()
-        }
-
-        editInput.apply {
+        edit_input.apply {
             this.visibility = GONE
             this.setOnOkClickedListener { finishEditTag(true) }
             this.setOnEmptySpaceClickListner { finishEditTag(false) }
@@ -103,9 +108,7 @@ class TagsFragment: BaseFragment() {
                     .apply(RequestOptions.centerCropTransform())
                     .into(preview)
 
-        view.findViewById<View>(R.id.add).setOnClickListener { viewModel.loadTags("", 1) }
-
-        return view
+        add.setOnClickListener { viewModel.loadTags() }
     }
 
     override fun onResume() {
@@ -156,19 +159,19 @@ class TagsFragment: BaseFragment() {
         if (currentEditedTag == null)
             return
         currentEditedTag?.let {
-            it.tag = editInput.getInput()
+            it.tag = edit_input.getInput()
             if (applyResult)
                 tagsAdapter.updateTag(it)
             currentEditedTag = null
         }
-        editInput.visibility = GONE
-        editInput.setText("")
+        edit_input.visibility = GONE
+        edit_input.setText("")
     }
 
     private fun startEditTag(imageTag: ImageTag) {
         currentEditedTag = imageTag
-        editInput.setText(imageTag.tag)
-        editInput.visibility = VISIBLE
-        editInput.bringToFront()
+        edit_input.setText(imageTag.tag)
+        edit_input.visibility = VISIBLE
+        edit_input.bringToFront()
     }
 }

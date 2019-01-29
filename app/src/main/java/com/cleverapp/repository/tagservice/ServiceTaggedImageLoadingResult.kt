@@ -1,12 +1,12 @@
 package com.cleverapp.repository.tagservice
 
-import com.cleverapp.repository.ImageTagsLoadingResult
+import com.cleverapp.repository.TagsLoadingResult
 import com.cleverapp.repository.data.ImageTag
 import java.util.ArrayList
 
 class ServiceTaggedImageLoadingResult(
         private val response: GetImageTagResponse)
-    : ImageTagsLoadingResult {
+    : TagsLoadingResult {
 
     private val tagsConverted = stringsToImageTags(response.tags)
 
@@ -14,7 +14,7 @@ class ServiceTaggedImageLoadingResult(
         return response.error
     }
 
-    override fun getImageTags(): List<ImageTag>? {
+    override fun getTags(): List<ImageTag>? {
         return tagsConverted
     }
 
