@@ -28,7 +28,7 @@ class EditTagView @JvmOverloads constructor(
         ok.setOnClickListener(listener)
     }
 
-    fun setOnEmptySpaceClickListner(listener: (View) -> Unit) {
+    fun setOnEmptySpaceClickListener(listener: (View) -> Unit) {
         setOnClickListener(listener)
     }
 

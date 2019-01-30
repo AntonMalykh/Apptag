@@ -31,6 +31,18 @@ class TagsViewModel(app: Application,
     private val tagsRequest = MutableLiveData<Boolean>()
     private var imageId: String? = null
 
+    private var tagLanguage: Language = Language.valueOf(preferences.getString(PREFERENCE_KEY_TAG_LANGUAGE, Language.English.name)!!)
+        set(value) {
+            field = value
+            preferences.edit().putString(PREFERENCE_KEY_TAG_LANGUAGE, value.name).apply()
+        }
+
+    private var tagCount: Int = preferences.getInt(PREFERENCE_KEY_TAG_COUNT, 5)
+        set(value) {
+            field = value
+            preferences.edit().putInt(PREFERENCE_KEY_TAG_COUNT, value).apply()
+        }
+
     init {
         loading.also { loading ->
             loading.addSource(tagsRequest){
@@ -39,7 +51,7 @@ class TagsViewModel(app: Application,
         }
         imageTags.addSource(
                 Transformations.switchMap(tagsRequest){
-                    repository.getImageTags(imageBytes.value!!, getTagLanguage(), getTagCount())
+                    repository.getImageTags(imageBytes.value!!, tagLanguage, tagCount)
                 })
         {
             loading.value = false;
@@ -62,7 +74,9 @@ class TagsViewModel(app: Application,
         }
     }
 
-    fun loadTags() {
+    fun loadTags(language: Language, count: Int) {
+        tagLanguage = language
+        tagCount = count
         tagsRequest.value = true
     }
 
@@ -75,17 +89,9 @@ class TagsViewModel(app: Application,
             }
     }
 
-    fun onTagLanguageChanged(language: Language) {
-        preferences.edit().putString(PREFERENCE_KEY_TAG_LANGUAGE, language.name).apply()
-    }
+    fun getTagLanguage() = tagLanguage
 
-    fun onTagCountChanged(count: Int) {
-        preferences.edit().putInt(PREFERENCE_KEY_TAG_COUNT, count).apply()
-    }
-
-    fun getTagLanguage() = Language.valueOf(preferences.getString(PREFERENCE_KEY_TAG_LANGUAGE, Language.English.name)!!)
-
-    fun getTagCount() = preferences.getInt(PREFERENCE_KEY_TAG_COUNT, 5)
+    fun getTagCount() = tagCount
 
     private fun updateTagsOrdering(currentUiOrder: List<ImageTag>): List<ImageTag> {
         for (i in currentUiOrder.indices)

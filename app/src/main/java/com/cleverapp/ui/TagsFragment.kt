@@ -76,6 +76,8 @@ class TagsFragment: BaseFragment() {
 
         app_bar_layout.addOnOffsetChangedListener(
                 AppBarLayout.OnOffsetChangedListener { _, offset ->
+                    if (app_bar_layout == null)
+                        return@OnOffsetChangedListener
                     // If toolbar expanded, it has blurry dark background.
                     // If collapsed - white. To display icons correctly, you need to
                     // change the color of the icons to opposite accordingly.
@@ -99,7 +101,7 @@ class TagsFragment: BaseFragment() {
         edit_input.apply {
             this.visibility = GONE
             this.setOnOkClickedListener { finishEditTag(true) }
-            this.setOnEmptySpaceClickListner { finishEditTag(false) }
+            this.setOnEmptySpaceClickListener { finishEditTag(false) }
         }
 
         if (isNewImage(arguments!!))
@@ -108,7 +110,19 @@ class TagsFragment: BaseFragment() {
                     .apply(RequestOptions.centerCropTransform())
                     .into(preview)
 
-        add.setOnClickListener { viewModel.loadTags() }
+        ai_options.apply {
+            language = viewModel.getTagLanguage()
+            count = viewModel.getTagCount()
+            setOnApplyClickListener {
+                visibility = GONE
+                viewModel.loadTags(language, count)
+            }
+        }
+
+        add.setOnClickListener {
+            ai_options.visibility = VISIBLE
+            ai_options.bringToFront()
+        }
     }
 
     override fun onResume() {
