@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <integer name="history_item_space">6</integer>
+    <integer name="animation_duration_default">300</integer>
 </resources>

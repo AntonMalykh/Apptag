@@ -1,10 +1,7 @@
 package com.cleverapp.ui
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.ViewTreeObserver
+import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProviders
@@ -32,7 +29,6 @@ abstract class BaseFragment: Fragment() {
                     }                }
             }
 
-    protected open fun onViewIsLaidOut() { }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +41,17 @@ abstract class BaseFragment: Fragment() {
         view.viewTreeObserver.addOnGlobalLayoutListener(globalLayoutListener)
         return view
     }
+
+    override fun onPause() {
+        super.onPause()
+        isJustCreated = false
+    }
+
+    open fun onBackPressed(): Boolean = false
+
+    open fun onTouchEvent(event: MotionEvent?) {}
+
+    protected open fun onViewIsLaidOut() { }
 
     protected fun <T : ViewModel> getViewModel(viewModelClass: Class<T>): Lazy<T> {
         return lazy(LazyThreadSafetyMode.NONE) {
@@ -60,10 +67,4 @@ abstract class BaseFragment: Fragment() {
         return isJustCreated
     }
 
-    override fun onPause() {
-        super.onPause()
-        isJustCreated = false
-    }
-
-    open fun onBackPressed(): Boolean = false
 }

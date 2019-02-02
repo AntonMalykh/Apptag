@@ -3,6 +3,7 @@
 
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:statusBarColor">@color/status_bar_color_yellow</item>
+        <item name="colorError">@color/colorError</item>
     </style>
 
     <style name="ButtonDefault" parent="Widget.MaterialComponents.Button.OutlinedButton">

@@ -8,11 +8,11 @@ import android.content.Intent
 import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
+import android.provider.MediaStore
+import android.view.MotionEvent
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -23,17 +23,22 @@ import com.cleverapp.ui.recyclerview.*
 import com.cleverapp.ui.viewmodels.HistoryViewMode
 import com.cleverapp.ui.viewmodels.ImagesViewModel
 import com.cleverapp.utils.INTENT_IMAGE_TYPE
+import com.cleverapp.utils.isHitAreaBelow
 import com.cleverapp.utils.toPlainText
-import kotlinx.android.synthetic.main.history_fragment.*
+import kotlinx.android.synthetic.main.images_fragment.*
 
 
 class ImagesFragment: BaseFragment() {
 
     override val viewId: Int
-        get() = R.layout.history_fragment
+        get() = R.layout.images_fragment
 
     private companion object {
-        const val PICK_IMAGE_REQUEST = 0
+        const val REQUEST_PICK_IMAGE = 0
+        const val REQUEST_TAKE_IMAGE = 1
+
+        const val NEW_IMAGE_OPTION_PHOTO = 0
+        const val NEW_IMAGE_OPTION_GALLERY = 1
     }
 
     private lateinit var historyAdapter: HistoryAdapter
@@ -80,16 +85,56 @@ class ImagesFragment: BaseFragment() {
 
         historyAdapter.itemTouchHelper.attachToRecyclerView(history)
 
-        fab.setOnClickListener { openFileChooser() }
-    }
-
-    private fun onImageClicked(taggedImage: TaggedImage) {
-        navController.navigate(NavigationDirections.historyToEditSavedImage(taggedImage.id))
+        multi_fab.apply {
+            addOption(NEW_IMAGE_OPTION_PHOTO, R.drawable.ic_add_a_photo_white)
+            addOption(NEW_IMAGE_OPTION_GALLERY, R.drawable.ic_photo_library_white)
+            setOnOptionsClickListener {
+                when (it) {
+                    NEW_IMAGE_OPTION_GALLERY -> startPickingImage()
+                    NEW_IMAGE_OPTION_PHOTO -> startTakingImage()
+                }
+            }
+        }
     }
 
     override fun onPause() {
         super.onPause()
         viewModel.updateImageOrdering(historyAdapter.getItems())
+    }
+
+    override fun onViewIsLaidOut() {
+        super.onViewIsLaidOut()
+        historyAdapter.layoutParamsProvider =
+                view?.width?.let { LayoutParamsProvider(it, viewModel.getViewModeLiveData().value!!) }
+        history.adapter = historyAdapter
+        history.layoutManager = layoutManager
+        observeViewModel()
+        if (isJustCreated())
+            viewModel.updateHistory()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (!isExpectedResult(requestCode) || resultCode != RESULT_OK || data == null)
+            return
+
+        val location : Uri? = data.data
+        location?.let { navController.navigate(NavigationDirections.historyToEditNewImage(it)) }
+    }
+
+    override fun onTouchEvent(event: MotionEvent?) {
+        if (event != null && !multi_fab.isHitAreaBelow(event.x.toInt(), event.y.toInt())) {
+            multi_fab.collapse()
+        }
+        super.onTouchEvent(event)
+    }
+
+    private fun isExpectedResult(requestCode: Int): Boolean {
+        return requestCode == REQUEST_TAKE_IMAGE || requestCode == REQUEST_PICK_IMAGE
+    }
+
+    private fun onImageClicked(taggedImage: TaggedImage) {
+        navController.navigate(NavigationDirections.historyToEditSavedImage(taggedImage.id))
     }
 
     private fun applyViewMode(mode: HistoryViewMode): Boolean {
@@ -106,17 +151,6 @@ class ImagesFragment: BaseFragment() {
         return true
     }
 
-    override fun onViewIsLaidOut() {
-        super.onViewIsLaidOut()
-        historyAdapter.layoutParamsProvider =
-                view?.width?.let { LayoutParamsProvider(it, viewModel.getViewModeLiveData().value!!) }
-        history.adapter = historyAdapter
-        history.layoutManager = layoutManager
-        observeViewModel()
-        if (isJustCreated())
-            viewModel.updateHistory()
-    }
-
     private fun observeViewModel() {
         viewModel.getImagesLiveData().observe(
                 this,
@@ -125,7 +159,15 @@ class ImagesFragment: BaseFragment() {
         viewModel.getViewModeLiveData().observe(this, Observer { applyViewMode(it) })
     }
 
-    private fun openFileChooser() {
+    private fun startTakingImage() {
+        Intent(MediaStore.ACTION_IMAGE_CAPTURE).also {intent ->
+            intent.resolveActivity(activity!!.packageManager)?.also {
+                startActivityForResult(intent, REQUEST_TAKE_IMAGE)
+            }
+        }
+    }
+
+    private fun startPickingImage() {
         val getIntent = Intent(Intent.ACTION_GET_CONTENT)
         getIntent.type = INTENT_IMAGE_TYPE
 
@@ -135,16 +177,7 @@ class ImagesFragment: BaseFragment() {
         val chooserIntent = Intent.createChooser(getIntent, getString(R.string.image_chooser_title))
         chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(pickIntent))
 
-        startActivityForResult(chooserIntent, PICK_IMAGE_REQUEST)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode != PICK_IMAGE_REQUEST || resultCode != RESULT_OK || data == null)
-            return
-
-        val location : Uri? = data.data
-        location?.let { navController.navigate(NavigationDirections.historyToEditNewImage(it)) }
+        startActivityForResult(chooserIntent, REQUEST_PICK_IMAGE)
     }
 }
 

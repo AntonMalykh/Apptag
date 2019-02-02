@@ -3,12 +3,14 @@
     <!--Theme-->
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303f9f</color>
-    <color name="colorAccent">#C3FFB700</color>
-    <color name="colorAccent_transparent">#E6A802</color>
+    <color name="colorAccent">#BFFFB700</color>
+    <color name="colorAccent_transparent">#40FFB700</color>
     <color name="accent_material_light">#f5b800</color>
     <color name="primary_dark_material_light_light_status_bar">#c8c8c8</color>
     <color name="accent_material_light_1">#ffcf40</color>
     <color name="status_bar_color_yellow">#E9A701</color>
+    <color name="colorError">#BFE93500</color>
+    <color name="colorError_transparent">#40E93500</color>
 
 
     <color name="text_on_image_background">#a0e1e1e1</color>

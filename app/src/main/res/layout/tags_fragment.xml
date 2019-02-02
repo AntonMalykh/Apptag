@@ -7,21 +7,26 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?android:colorBackground"
+    android:clipChildren="false"
     android:clickable="true"
     android:focusable="true">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar_layout"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+        android:layout_height="@dimen/tags_appbar_height"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:elevation="@dimen/elevation_default">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:id="@+id/collapsing_toolbar"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_scrollFlags="scroll|enterAlways|exitUntilCollapsed"
-            app:contentScrim="?android:attr/statusBarColor">
+            app:contentScrim="?android:attr/statusBarColor"
+            app:scrimAnimationDuration="@integer/animation_duration_default"
+            app:scrimVisibleHeightTrigger="@dimen/tags_appbar_script_threshold"
+            android:elevation="@dimen/elevation_default">
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/preview"
@@ -37,7 +42,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-                app:layout_collapseMode="pin" />
+                app:layout_collapseMode="pin"
+                android:elevation="@dimen/elevation_default"/>
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
 
@@ -51,22 +57,21 @@
         android:layout_marginTop="@dimen/offset_small"
         android:layout_marginEnd="@dimen/offset_small"
         android:background="?android:colorBackground"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:clipToPadding="false"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:itemsCout="3"
         tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/tag_view_holder"
         tools:orientation="vertical" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/add"
+    <com.cleverapp.ui.view.MultiOptionFab
+        android:id="@+id/multi_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        app:srcCompat="@drawable/ic_add_white"
+        android:clipChildren="false"
         app:layout_anchor="@id/app_bar_layout"
-        app:layout_anchorGravity="right|bottom" />
+        app:layout_anchorGravity="center|bottom" />
 
     <com.cleverapp.ui.view.EditTagView
         android:id="@+id/edit_input"

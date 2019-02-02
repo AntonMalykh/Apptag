@@ -14,7 +14,7 @@ import com.cleverapp.repository.database.AppDatabase
         indices = [Index(TaggedImage.COLUMN_NAME_ID)])
 data class ImageTag(
         @ColumnInfo(name = COLUMN_NAME_IMAGE_ID)
-        var imageId: String,
+        var imageId: String = "",
         var tag: String = "",
         var isCustom: Boolean = false,
         @ColumnInfo(name = COLUMN_NAME_ORDINAL_NUM)

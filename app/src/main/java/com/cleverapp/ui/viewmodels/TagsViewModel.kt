@@ -54,7 +54,7 @@ class TagsViewModel(app: Application,
                     repository.getImageTags(imageBytes.value!!, tagLanguage, tagCount)
                 })
         {
-            loading.value = false;
+            loading.value = false
             if (TextUtils.isEmpty(it.getError()))
                 imageTags.value = it.getTags()
             else

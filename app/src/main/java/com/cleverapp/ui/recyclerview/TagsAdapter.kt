@@ -2,9 +2,10 @@ package com.cleverapp.ui.recyclerview
 
 import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
-import android.animation.ValueAnimator.REVERSE
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.view.MotionEvent
+import android.view.MotionEvent.ACTION_MOVE
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
@@ -19,38 +20,11 @@ private const val VIEW_TYPE_TAG = 0
 private const val VIEW_TYPE_LOADING = 1
 private val ITEM_LOADING = ImageTag("", "", false, 0)
 
-class TagsAdapter: BaseAdapter<ImageTag>() {
+class TagsAdapter(val recyclerView: RecyclerView): BaseAdapter<ImageTag>() {
 
     private var onEditTagClickedCallback: ((ImageTag) -> Unit)? = null
 
-    override val itemTouchHelper: ItemTouchHelper = ItemTouchHelper(
-            object: ItemTouchHelper.Callback(){
-                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                    itemsList.removeAt(viewHolder.adapterPosition)
-                    notifyItemRemoved(viewHolder.adapterPosition)
-                }
-
-                override fun getMovementFlags(recyclerView: RecyclerView,
-                                              viewHolder: RecyclerView.ViewHolder): Int {
-                    return makeMovementFlags(
-                            ItemTouchHelper.DOWN
-                                    or ItemTouchHelper.UP,
-                            ItemTouchHelper.RIGHT
-                                    or ItemTouchHelper.LEFT)
-                }
-
-                override fun onMove(recyclerView: RecyclerView,
-                                    viewHolder: RecyclerView.ViewHolder,
-                                    target: RecyclerView.ViewHolder): Boolean {
-                    if (target.itemViewType == VIEW_TYPE_LOADING)
-                        return false
-                    Collections.swap(getItems(), viewHolder.adapterPosition, target.adapterPosition)
-                    notifyItemMoved(viewHolder.adapterPosition, target.adapterPosition)
-                    return true
-                }
-
-                override fun isLongPressDragEnabled(): Boolean = false
-            })
+    override val itemTouchHelper: ItemTouchHelper = ItemTouchHelper(TagsTouchCallback())
 
     fun setOnEditTagClickedCallback(callback: (ImageTag) -> Unit) {
         onEditTagClickedCallback = callback
@@ -70,12 +44,12 @@ class TagsAdapter: BaseAdapter<ImageTag>() {
 
     fun updateTag(tag: ImageTag) {
         val position = itemsList.indexOf(tag)
-        if (position >= 0) {
-            tag.isCustom = true
+        if (position >= 0)
             notifyItemChanged(position)
-        }
-        else
+        else {
             itemsList.add(0, tag)
+            notifyItemInserted(0)
+        }
     }
 
     fun setProgressEnabled(enabled: Boolean) {
@@ -105,31 +79,98 @@ class TagsAdapter: BaseAdapter<ImageTag>() {
         private val edit: View = itemView.findViewById(R.id.edit)
         private val move: View = itemView.findViewById(R.id.move)
 
-        override fun bindItem(item: ImageTag) {
-            tag.text = item.tag
-            tag.setTextColor(if (item.isCustom) Color.BLUE else Color.GRAY)
-            edit.setOnClickListener { onEditTagClickedCallback?.invoke(item) }
-            move.setOnTouchListener {
-                _, event ->
+        init{
+            itemView.isClickable = false
+            itemView.setOnLongClickListener {
+                itemTouchHelper.startDrag(this)
+                true
+            }
+            itemView.setOnTouchListener { _, event ->
+                if (event.action != ACTION_MOVE)
+                    return@setOnTouchListener false
+                return@setOnTouchListener recyclerView.scrollState == RecyclerView.SCROLL_STATE_IDLE
+            }
+            move.setOnTouchListener { _, event ->
                 if (event.action == MotionEvent.ACTION_DOWN) {
-
-                    val colorAnimation = ValueAnimator.ofObject(
-                            ArgbEvaluator(),
-                            Color.TRANSPARENT,
-                            ResourcesCompat.getColor(
-                                    itemView.context.resources,
-                                    R.color.colorAccent_transparent,
-                                    null))
-                    colorAnimation.duration = 300 // milliseconds
-                    colorAnimation.repeatMode = REVERSE
-                    colorAnimation.repeatCount = 1
-                    colorAnimation.addUpdateListener {
-                        animator -> itemView.setBackgroundColor(animator.animatedValue as Int) }
-                    colorAnimation.start()
                     itemTouchHelper.startDrag(this)
                 }
                 true
             }
+
+        }
+
+        override fun bindItem(item: ImageTag) {
+            tag.text = item.tag
+            tag.setTextColor(if (item.isCustom) Color.BLUE else Color.GRAY)
+            edit.setOnClickListener { onEditTagClickedCallback?.invoke(item) }
+        }
+    }
+
+    private inner class TagsTouchCallback: ItemTouchHelper.Callback() {
+
+        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            itemsList.removeAt(viewHolder.adapterPosition)
+            notifyItemRemoved(viewHolder.adapterPosition)
+        }
+
+        override fun getMovementFlags(recyclerView: RecyclerView,
+                                      viewHolder: RecyclerView.ViewHolder): Int {
+            return makeMovementFlags(
+                    ItemTouchHelper.DOWN
+                            or ItemTouchHelper.UP,
+                    ItemTouchHelper.RIGHT
+                            or ItemTouchHelper.LEFT)
+        }
+
+        override fun onMove(recyclerView: RecyclerView,
+                            viewHolder: RecyclerView.ViewHolder,
+                            target: RecyclerView.ViewHolder): Boolean {
+            if (target.itemViewType == VIEW_TYPE_LOADING)
+                return false
+            Collections.swap(getItems(), viewHolder.adapterPosition, target.adapterPosition)
+            notifyItemMoved(viewHolder.adapterPosition, target.adapterPosition)
+            return true
+        }
+
+        override fun isLongPressDragEnabled(): Boolean = false
+
+        override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
+            if (viewHolder == null || viewHolder.itemViewType == VIEW_TYPE_LOADING)
+                return
+            animateViewHolder(viewHolder, actionState)
+        }
+
+        override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
+            animateViewHolder(viewHolder, ItemTouchHelper.ACTION_STATE_IDLE)
+        }
+
+        private fun animateViewHolder(viewHolder: RecyclerView.ViewHolder, actionState: Int) {
+            fun colorFrom() = (viewHolder.itemView.background as? ColorDrawable)
+                    ?.color
+                    ?: Color.TRANSPARENT
+            val resources = viewHolder.itemView.resources
+            val colorTo = when (actionState) {
+                ItemTouchHelper.ACTION_STATE_DRAG ->
+                    ResourcesCompat.getColor(
+                            viewHolder.itemView.context.resources,
+                            R.color.colorAccent_transparent,
+                            null)
+                ItemTouchHelper.ACTION_STATE_SWIPE ->
+                    ResourcesCompat.getColor(
+                            viewHolder.itemView.context.resources,
+                            R.color.colorError_transparent,
+                            null)
+                else -> Color.TRANSPARENT
+
+            }
+            val colorAnimation = ValueAnimator.ofObject(
+                    ArgbEvaluator(),
+                    colorFrom(),
+                    colorTo)
+            colorAnimation.duration = resources.getInteger(R.integer.animation_duration_default).toLong() // milliseconds
+            colorAnimation.addUpdateListener {
+                animator -> viewHolder.itemView.setBackgroundColor(animator.animatedValue as Int) }
+            colorAnimation.start()
         }
     }
 }

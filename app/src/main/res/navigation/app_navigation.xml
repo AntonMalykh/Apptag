@@ -10,7 +10,7 @@
         android:id="@+id/historyFragment"
         android:name="com.cleverapp.ui.ImagesFragment"
         android:label="HistoryFragment"
-        tools:layout="@layout/history_fragment">
+        tools:layout="@layout/images_fragment">
         <action
             android:id="@+id/navigate_history_to_editTags"
             app:destination="@id/editTagsFragment"

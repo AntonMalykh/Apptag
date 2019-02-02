@@ -64,7 +64,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="jar:file:/C:/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/action/ic_done_black_24dp.xml" />
+                                      <entry key="url" value="jar:file:/C:/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/image/ic_photo_filter_black_24dp.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -74,9 +74,8 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="color" value="7d7d7d" />
-                            <entry key="opacityPercent" value="25" />
-                            <entry key="outputName" value="ic_done_black_disabled" />
+                            <entry key="color" value="ffffff" />
+                            <entry key="outputName" value="ic_ai_recognition_white" />
                             <entry key="sourceFile" value="C:\Users\malyk\Downloads\Dev\Icons\hashtag-symbol.svg" />
                           </map>
                         </option>

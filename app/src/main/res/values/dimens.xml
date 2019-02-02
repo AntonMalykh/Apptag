@@ -5,5 +5,7 @@
     <dimen name="button_height_default">56dp</dimen>
     <dimen name="text_size_medium">16sp</dimen>
     <dimen name="offset_medium">16dp</dimen>
-    <dimen name="elevation_default">4dp</dimen>
+    <dimen name="elevation_default">8dp</dimen>
+    <dimen name="tags_appbar_height">304dp</dimen>
+    <dimen name="tags_appbar_script_threshold">96dp</dimen>
 </resources>

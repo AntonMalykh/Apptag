@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.widget.PopupMenu
 import com.cleverapp.R
@@ -61,5 +62,9 @@ class AiOptionsView @JvmOverloads constructor(
 
     fun setOnApplyClickListener(listener: () -> Unit){
         onApplyClickListener = listener
+    }
+
+    fun setOnEmptySpaceClickListener(listener: (View) -> Unit) {
+        setOnClickListener(listener)
     }
 }
