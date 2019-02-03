@@ -1,10 +1,8 @@
 package com.cleverapp.ui
 
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.app.Activity.RESULT_OK
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
-import android.content.Intent
+import android.content.*
 import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
@@ -19,13 +17,17 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cleverapp.R
 import com.cleverapp.repository.data.TaggedImage
 import com.cleverapp.ui.navigation.NavigationDirections
-import com.cleverapp.ui.recyclerview.*
+import com.cleverapp.ui.recyclerview.HistoryAdapter
+import com.cleverapp.ui.recyclerview.LayoutParamsProvider
+import com.cleverapp.ui.recyclerview.OnImageMenuClickListener
 import com.cleverapp.ui.viewmodels.HistoryViewMode
 import com.cleverapp.ui.viewmodels.ImagesViewModel
 import com.cleverapp.utils.INTENT_IMAGE_TYPE
-import com.cleverapp.utils.isHitAreaBelow
+import com.cleverapp.utils.isVisibleAreaContains
 import com.cleverapp.utils.toPlainText
 import kotlinx.android.synthetic.main.images_fragment.*
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class ImagesFragment: BaseFragment() {
@@ -35,7 +37,7 @@ class ImagesFragment: BaseFragment() {
 
     private companion object {
         const val REQUEST_PICK_IMAGE = 0
-        const val REQUEST_TAKE_IMAGE = 1
+        const val REQUEST_TAKE_PHOTO = 1
 
         const val NEW_IMAGE_OPTION_PHOTO = 0
         const val NEW_IMAGE_OPTION_GALLERY = 1
@@ -47,6 +49,8 @@ class ImagesFragment: BaseFragment() {
 
     private val viewModel: ImagesViewModel by getViewModel(ImagesViewModel::class.java)
 
+    private var capturePhotoUri: Uri? = null
+
     private var onMenuClickListener = object: OnImageMenuClickListener{
         override fun onRemoveClicked(image: TaggedImage) {
             viewModel.onRemoveClicked(image)
@@ -57,7 +61,6 @@ class ImagesFragment: BaseFragment() {
                     .primaryClip =
                     ClipData.newPlainText("Image tags", image.tags.toPlainText())
         }
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -91,7 +94,7 @@ class ImagesFragment: BaseFragment() {
             setOnOptionsClickListener {
                 when (it) {
                     NEW_IMAGE_OPTION_GALLERY -> startPickingImage()
-                    NEW_IMAGE_OPTION_PHOTO -> startTakingImage()
+                    NEW_IMAGE_OPTION_PHOTO -> startTakingPhoto()
                 }
             }
         }
@@ -115,22 +118,31 @@ class ImagesFragment: BaseFragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (!isExpectedResult(requestCode) || resultCode != RESULT_OK || data == null)
+        if (!isExpectedResult(requestCode) || resultCode != RESULT_OK)
             return
 
-        val location : Uri? = data.data
+        val location: Uri? = if (requestCode == REQUEST_TAKE_PHOTO) capturePhotoUri else data?.data
         location?.let { navController.navigate(NavigationDirections.historyToEditNewImage(it)) }
+        capturePhotoUri = null
+
     }
 
     override fun onTouchEvent(event: MotionEvent?) {
-        if (event != null && !multi_fab.isHitAreaBelow(event.x.toInt(), event.y.toInt())) {
+        if (event != null && !multi_fab.isVisibleAreaContains(event.x.toInt(), event.y.toInt())) {
             multi_fab.collapse()
         }
         super.onTouchEvent(event)
     }
 
+    override fun onPermissionGranted(permission: String) {
+        super.onPermissionGranted(permission)
+        when (permission) {
+            WRITE_EXTERNAL_STORAGE -> startTakingPhoto()
+        }
+    }
+
     private fun isExpectedResult(requestCode: Int): Boolean {
-        return requestCode == REQUEST_TAKE_IMAGE || requestCode == REQUEST_PICK_IMAGE
+        return requestCode == REQUEST_TAKE_PHOTO || requestCode == REQUEST_PICK_IMAGE
     }
 
     private fun onImageClicked(taggedImage: TaggedImage) {
@@ -159,12 +171,33 @@ class ImagesFragment: BaseFragment() {
         viewModel.getViewModeLiveData().observe(this, Observer { applyViewMode(it) })
     }
 
-    private fun startTakingImage() {
-        Intent(MediaStore.ACTION_IMAGE_CAPTURE).also {intent ->
-            intent.resolveActivity(activity!!.packageManager)?.also {
-                startActivityForResult(intent, REQUEST_TAKE_IMAGE)
+    private fun startTakingPhoto() {
+        if (hasPermission(WRITE_EXTERNAL_STORAGE)) {
+            val contentValues = ContentValues().also {
+                val timeStamp: String =
+                        SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+                                .format(Date())
+                it.put(MediaStore.Images.Media.TITLE, "Apptag_$timeStamp")
+                it.put(MediaStore.Images.Media.DATE_ADDED, timeStamp)
+            }
+            capturePhotoUri =
+                    activity?.contentResolver?.insert(
+                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                            contentValues)
+            Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { intent ->
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, capturePhotoUri)
+                intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                intent.resolveActivity(activity!!.packageManager)?.also {
+                    activity?.grantUriPermission(
+                            it.packageName,
+                            capturePhotoUri,
+                            Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                    startActivityForResult(intent, REQUEST_TAKE_PHOTO)
+                }
             }
         }
+        else
+            requestPermission(WRITE_EXTERNAL_STORAGE)
     }
 
     private fun startPickingImage() {

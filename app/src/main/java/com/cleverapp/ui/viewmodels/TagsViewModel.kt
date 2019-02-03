@@ -61,16 +61,21 @@ class TagsViewModel(app: Application,
                 error.value = it.getError()
         }
 
-        if (TagsFragment.isNewImage(tagsArguments))
-            imageBytes.value = repository.getImageBytes(tagsArguments.getParcelable(TagsFragment.ARG_KEY_URI)!!)
-        else {
-            imageId = tagsArguments.getString(TagsFragment.ARG_KEY_IMAGE_ID)
-            imageLoading.observeForever {
-                    imageBytes.value = it.previewBytes
-                    imageTags.value = it.tags
-                    loading.value = false
-            }
-            imageRequest.value = true
+        when {
+            TagsFragment.isImage(tagsArguments) ->
+                TagsFragment.extractImageUri(tagsArguments)?.let { args ->
+                    imageBytes.value = repository.getImageBytes(args)
+                }
+            else ->
+                TagsFragment.extractImageId(tagsArguments)?.let { args ->
+                    imageId = args
+                    imageLoading.observeForever {
+                        imageBytes.value = it.previewBytes
+                        imageTags.value = it.tags;
+                        loading.value = false
+                    }
+                    imageRequest.value = true
+                }
         }
     }
 

@@ -15,20 +15,22 @@ import com.cleverapp.R
 import com.cleverapp.repository.data.ImageTag
 import com.cleverapp.ui.recyclerview.TagsAdapter
 import com.cleverapp.ui.viewmodels.TagsViewModel
-import com.cleverapp.utils.isHitAreaBelow
+import com.cleverapp.utils.isVisibleAreaContains
 import com.google.android.material.appbar.AppBarLayout
 import kotlinx.android.synthetic.main.tags_fragment.*
 
 class TagsFragment: BaseFragment() {
 
     companion object {
-        const val ARG_KEY_URI = "ARG_KEY_URI"
-        const val ARG_KEY_IMAGE_ID = "ARG_KEY_IMAGE_ID"
+        private const val ARG_KEY_URI = "ARG_KEY_URI"
+        private const val ARG_KEY_IMAGE_ID = "ARG_KEY_IMAGE_ID"
 
-        const val NEW_TAG_OPTION_ENTER = 0
-        const val NEW_TAG_OPTION_AI = 1
+        private const val NEW_TAG_OPTION_ENTER = 0
+        private const val NEW_TAG_OPTION_AI = 1
 
-        private fun newBundle(uri: Uri?, imageId: String?): Bundle {
+        private const val IMAGE_EXPAND_DELAY = 300L
+
+        private fun newBundle(uri: Uri? = null, imageId: String? = null): Bundle {
             return Bundle().also { bundle ->
                     when{
                         uri != null -> bundle.putParcelable(ARG_KEY_URI, uri)
@@ -38,14 +40,22 @@ class TagsFragment: BaseFragment() {
         }
 
         fun getArgsForNewImage(imageUri: Uri): Bundle {
-            return newBundle(imageUri, null)
+            return newBundle(uri = imageUri)
         }
 
         fun getArgsForSavedImage(imageId: String): Bundle {
-            return newBundle(null, imageId)
+            return newBundle(imageId = imageId)
         }
 
-        fun isNewImage(args: Bundle): Boolean {
+        fun extractImageUri(args: Bundle): Uri? {
+            return args.getParcelable(ARG_KEY_URI)
+        }
+
+        fun extractImageId(args: Bundle): String? {
+            return args.getString(ARG_KEY_IMAGE_ID)
+        }
+
+        fun isImage(args: Bundle): Boolean {
             return args.containsKey(ARG_KEY_URI)
         }
     }
@@ -105,7 +115,7 @@ class TagsFragment: BaseFragment() {
         tagsAdapter.itemTouchHelper.attachToRecyclerView(tags)
 
 
-        if (isNewImage(arguments!!)) {
+        if (isImage(arguments!!)) {
             Glide.with(this)
                     .load(arguments!!.getParcelable(ARG_KEY_URI) as Uri)
                     .apply(RequestOptions.centerCropTransform())
@@ -159,22 +169,24 @@ class TagsFragment: BaseFragment() {
     }
 
     override fun onTouchEvent(event: MotionEvent?) {
-        if (event != null && !multi_fab.isHitAreaBelow(event.x.toInt(), event.y.toInt()))
+        if (event != null && !multi_fab.isVisibleAreaContains(event.x.toInt(), event.y.toInt()))
             multi_fab.collapse()
         super.onTouchEvent(event)
     }
 
     private fun observeData() {
-        if (!isNewImage(arguments!!))
-            viewModel.imageBytes.observe(
-                    this,
-                    Observer {
-                        Glide.with(this)
-                                .load(it)
-                                .apply(RequestOptions.centerCropTransform())
-                                .into(preview)
-                    }
-            )
+        viewModel.imageBytes.observe(
+                this,
+                Observer {
+                    Glide.with(this)
+                            .load(it)
+                            .apply(RequestOptions.centerCropTransform())
+                            .into(preview)
+                    app_bar_layout.postDelayed(
+                            { app_bar_layout?.setExpanded(true, true) },
+                            IMAGE_EXPAND_DELAY)
+                }
+        )
 
         viewModel.loading.observe(
                 this,

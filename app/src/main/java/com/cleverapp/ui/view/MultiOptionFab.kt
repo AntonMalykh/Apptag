@@ -5,6 +5,8 @@ import android.content.Context
 import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.View
+import android.view.ViewGroup
+import android.widget.Space
 import androidx.annotation.DrawableRes
 import androidx.appcompat.widget.LinearLayoutCompat
 import com.cleverapp.R
@@ -32,8 +34,9 @@ class MultiOptionFab@JvmOverloads constructor(
 
     override fun onFocusChanged(gainFocus: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
         super.onFocusChanged(gainFocus, direction, previouslyFocusedRect)
-        if (!hasFocus() && isExpanded)
+        if (!hasFocus() && isExpanded) {
             collapse()
+        }
     }
 
     override fun onClick(v: View?) {
@@ -51,23 +54,31 @@ class MultiOptionFab@JvmOverloads constructor(
     }
 
     fun expand() {
-        requestFocus()
         removeView(fab)
-        optionButtons.forEach { addView(it) }
+        optionButtons.forEach {
+            if (childCount > 0)
+                addView(makeSpace())
+            addView(it)
+        }
         isExpanded = true
     }
 
     fun collapse() {
-        optionButtons.forEach{ removeView(it) }
-        if (!fab.isAttachedToWindow)
+        if (!isExpanded) {
+            return
+        }
+        removeAllViews()
+        if (!fab.isAttachedToWindow) {
             addView(fab)
+        }
         isExpanded = false
     }
 
     fun addOption(optionId: Int, @DrawableRes iconResId: Int) {
         val wasExpanded = isExpanded
-        if (wasExpanded)
+        if (wasExpanded) {
             collapse()
+        }
         val fab = FloatingActionButton(context)
         fab.setImageResource(iconResId)
         fab.setOnClickListener(this)
@@ -79,7 +90,17 @@ class MultiOptionFab@JvmOverloads constructor(
             }
             else -> optionButtons[index] = fab
         }
-        if (wasExpanded)
+        if (wasExpanded) {
             expand()
+        }
+    }
+
+    private fun makeSpace(): View {
+        return Space(context).apply {
+            layoutParams =
+                    ViewGroup.LayoutParams(
+                            context.resources.getDimensionPixelSize(R.dimen.offset_medium),
+                            0)
+        }
     }
 }

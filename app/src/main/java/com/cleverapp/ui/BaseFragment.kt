@@ -1,7 +1,9 @@
 package com.cleverapp.ui
 
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.*
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProviders
@@ -9,7 +11,11 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.cleverapp.ui.viewmodels.ViewModelFactory
 
-abstract class BaseFragment: Fragment() {
+abstract class BaseFragment : Fragment() {
+
+    private companion object {
+        const val REQUEST_CODE_PERMISSION = 0
+    }
 
     abstract val viewId: Int
 
@@ -26,9 +32,9 @@ abstract class BaseFragment: Fragment() {
                     if (view!!.isLaidOut) {
                         onViewIsLaidOut()
                         view!!.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                    }                }
+                    }
+                }
             }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,11 +53,32 @@ abstract class BaseFragment: Fragment() {
         isJustCreated = false
     }
 
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode != REQUEST_CODE_PERMISSION)
+            return
+        permissions.forEachIndexed {
+            index, permission ->
+            if (grantResults[index] == PackageManager.PERMISSION_GRANTED)
+                onPermissionGranted(permission)
+        }
+    }
+
     open fun onBackPressed(): Boolean = false
 
     open fun onTouchEvent(event: MotionEvent?) {}
 
-    protected open fun onViewIsLaidOut() { }
+    protected open fun onViewIsLaidOut() {}
+
+    protected fun hasPermission(permission: String): Boolean {
+        return ContextCompat.checkSelfPermission(activity!!, permission) == PackageManager.PERMISSION_GRANTED
+    }
+
+    protected fun requestPermission(permission: String) {
+        requestPermissions(arrayOf(permission), REQUEST_CODE_PERMISSION)
+    }
+
+    protected open fun onPermissionGranted(permission: String){}
 
     protected fun <T : ViewModel> getViewModel(viewModelClass: Class<T>): Lazy<T> {
         return lazy(LazyThreadSafetyMode.NONE) {
