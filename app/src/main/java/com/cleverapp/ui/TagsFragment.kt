@@ -89,8 +89,8 @@ class TagsFragment: BaseFragment() {
         }
 
         app_bar_layout.addOnOffsetChangedListener(
-                AppBarLayout.OnOffsetChangedListener { _, offset ->
-                    if (app_bar_layout == null)
+                AppBarLayout.OnOffsetChangedListener { appbar, offset ->
+                    if (appbar == null)
                         return@OnOffsetChangedListener
                     // If toolbar expanded, it has blurry dark background.
                     // If collapsed - white. To display icons correctly, you need to
@@ -102,11 +102,13 @@ class TagsFragment: BaseFragment() {
 
                     multi_fab.scaleX = 1-ratio
                     multi_fab.scaleY = 1-ratio
+                    empty.translationY =
+                            (app_bar_layout.totalScrollRange - toolbar.height) * (1 + ratio/4)
                 })
 
         tagsAdapter = TagsAdapter(tags).also { adapter ->
             adapter.getIsEmptyLiveData().observeForever {
-                toolbar.menu.findItem(R.id.done).isEnabled = it == false
+                empty.visibility = if (it) VISIBLE else GONE
             }
             adapter.setOnEditTagClickedCallback { imageTag -> startEditTag(imageTag) }
         }

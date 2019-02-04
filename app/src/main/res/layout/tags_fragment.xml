@@ -26,7 +26,7 @@
             app:layout_scrollFlags="scroll|enterAlways|exitUntilCollapsed"
             app:contentScrim="?android:attr/statusBarColor"
             app:scrimAnimationDuration="@integer/animation_duration_default"
-            app:scrimVisibleHeightTrigger="@dimen/tags_appbar_script_threshold"
+            app:scrimVisibleHeightTrigger="@dimen/tags_appbar_scrim_threshold"
             android:elevation="@dimen/elevation_default">
 
             <androidx.appcompat.widget.AppCompatImageView
@@ -65,6 +65,14 @@
         tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/tag_view_holder"
         tools:orientation="vertical" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/empty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/empty"
+        app:layout_anchor="@id/app_bar_layout"
+        app:layout_anchorGravity="center|bottom"/>
 
     <com.cleverapp.ui.view.MultiOptionFab
         android:id="@+id/multi_fab"

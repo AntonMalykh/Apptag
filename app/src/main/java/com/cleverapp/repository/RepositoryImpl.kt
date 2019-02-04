@@ -2,7 +2,6 @@ package com.cleverapp.repository
 
 import android.content.ContentResolver
 import android.net.Uri
-import android.provider.MediaStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -83,18 +82,18 @@ class RepositoryImpl(
     }
 
     override fun getImageBytes(uri: Uri): ByteArray {
-        val cursor = contentResolver.query(uri, null, null, null, null)
+        val cursor = contentResolver.query(
+                uri,
+                null,
+                null,
+                null,
+                null)
 
         cursor?.let {
-            var size = 0
-            if (cursor.moveToFirst()) {
-                size = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns.SIZE))
+            if (it.moveToFirst()) {
+                return compressImage(contentResolver.openInputStream(uri), MAX_THUMBNAIL_IMAGE_FILE_SIZE)
             }
-            cursor.close()
-            return if (size > MAX_THUMBNAIL_IMAGE_FILE_SIZE)
-                compressImage(contentResolver.openInputStream(uri), MAX_THUMBNAIL_IMAGE_FILE_SIZE)
-            else
-                contentResolver.openInputStream(uri).readBytes()
+            it.close()
         }
         return ByteArray(0)
     }

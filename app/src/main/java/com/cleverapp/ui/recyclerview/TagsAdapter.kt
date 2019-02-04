@@ -59,8 +59,8 @@ class TagsAdapter(val recyclerView: RecyclerView): BaseAdapter<ImageTag>() {
                 notifyItemInserted(size - 1)
             }
             else if (!isEmpty() && last() == ITEM_LOADING) {
-                removeAt(size - 1)
-                notifyItemRemoved(size)
+                removeAt(lastIndex)
+                notifyItemRemoved(lastIndex + 1)
             }
         }
     }
