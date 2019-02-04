@@ -95,7 +95,7 @@ class TagsFragment: BaseFragment() {
                     // If toolbar expanded, it has blurry dark background.
                     // If collapsed - white. To display icons correctly, you need to
                     // change the color of the icons to opposite accordingly.
-                    val ratio = Math.abs(offset.toFloat() / app_bar_layout.totalScrollRange)
+                    val ratio = Math.abs(offset.toFloat() / appbar.totalScrollRange)
                     val color = ColorUtils.blendARGB(Color.WHITE, Color.BLACK, ratio)
                     toolbar.menu.findItem(R.id.done).icon.setTint(color)
                     toolbar.navigationIcon?.setTint(color)
@@ -103,7 +103,7 @@ class TagsFragment: BaseFragment() {
                     multi_fab.scaleX = 1-ratio
                     multi_fab.scaleY = 1-ratio
                     empty.translationY =
-                            (app_bar_layout.totalScrollRange - toolbar.height) * (1 + ratio/4)
+                            (appbar.totalScrollRange - toolbar.height) * (1 + ratio/4)
                 })
 
         tagsAdapter = TagsAdapter(tags).also { adapter ->
