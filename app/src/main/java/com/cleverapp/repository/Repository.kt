@@ -27,4 +27,6 @@ interface Repository {
                      tagsLanguage: Language,
                      tagsCount: Int)
             : LiveData<TagsLoadingResult>
+
+    fun insertImages(imageUriList: List<Uri>)
 }

@@ -15,7 +15,7 @@ import com.cleverapp.repository.data.TaggedImage
 import com.cleverapp.utils.toPlainText
 import java.util.*
 
-class HistoryAdapter: BaseAdapter<TaggedImage>() {
+class ImagesAdapter: BaseAdapter<TaggedImage>() {
 
     private var onImageClickListener: ((TaggedImage) -> Unit)? = null
     private var onMenuClickListener: OnImageMenuClickListener? = null
@@ -47,6 +47,14 @@ class HistoryAdapter: BaseAdapter<TaggedImage>() {
                 }
     })
 
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder<TaggedImage> {
+        val holder = ImageViewHolder(parent)
+        layoutParamsProvider?.let {
+            holder.itemView.layoutParams = it.getLayoutParams()
+        }
+        return holder
+    }
+
     fun setOnMenuClickListener(onMenuClickListener: OnImageMenuClickListener) {
         this.onMenuClickListener = onMenuClickListener
     }
@@ -55,15 +63,7 @@ class HistoryAdapter: BaseAdapter<TaggedImage>() {
         this.onImageClickListener = listener
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder<TaggedImage> {
-        val holder = HistoryViewHolder(parent)
-        layoutParamsProvider?.let {
-            holder.itemView.layoutParams = it.getLayoutParams()
-        }
-        return holder
-    }
-
-    inner class HistoryViewHolder(parent: ViewGroup):
+    inner class ImageViewHolder(parent: ViewGroup):
             BaseViewHolder<TaggedImage>(
                     parent, R.layout.history_view_holder) {
 

@@ -62,13 +62,13 @@ class TagsViewModel(app: Application,
         }
 
         when {
-            TagsFragment.isImage(tagsArguments) ->
-                TagsFragment.extractImageUri(tagsArguments)?.let { args ->
-                    imageBytes.value = repository.getImageBytes(args)
+            TagsFragment.isNewImage(tagsArguments) ->
+                TagsFragment.extractImageUri(tagsArguments)?.let { imageUri ->
+                    imageBytes.value = repository.getImageBytes(imageUri)
                 }
             else ->
-                TagsFragment.extractImageId(tagsArguments)?.let { args ->
-                    imageId = args
+                TagsFragment.extractImageId(tagsArguments)?.let { imageId ->
+                    this.imageId = imageId
                     imageLoading.observeForever {
                         imageBytes.value = it.previewBytes
                         imageTags.value = it.tags;

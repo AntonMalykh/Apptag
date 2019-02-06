@@ -1,6 +1,7 @@
 package com.cleverapp.ui.viewmodels
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -11,13 +12,11 @@ private const val PREFERENCE_KEY_SPAN_COUNT = "PREFERENCE_KEY_SPAN_COUNT"
 
 class ImagesViewModel(app: Application): BaseViewModel(app) {
 
-    var imagesChangedObserver: Observer<Boolean> = Observer {
+    private val imagesChangedObserver: Observer<Boolean> = Observer {
         if (it == true)
             updateHistory()
     }
-
     private val request = MutableLiveData<Boolean>()
-
     private val images = Transformations.switchMap(request) {
         repository.getSavedTaggedImages()
     }
@@ -25,6 +24,11 @@ class ImagesViewModel(app: Application): BaseViewModel(app) {
 
     init {
         repository.getTaggedImagesChangedLiveData().observeForever(imagesChangedObserver)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        repository.getTaggedImagesChangedLiveData().removeObserver(imagesChangedObserver)
     }
 
     fun getImagesLiveData(): LiveData<List<TaggedImage>> = images
@@ -51,19 +55,6 @@ class ImagesViewModel(app: Application): BaseViewModel(app) {
         viewMode.value = toApply
     }
 
-    private fun getCurrentViewMode(): HistoryViewMode {
-        val currentIsSingleColumn =
-                preferences.getInt(
-                        PREFERENCE_KEY_SPAN_COUNT,
-                        HistoryViewMode.MultiColumn.spanCount) == HistoryViewMode.SingleColumn.spanCount
-        return if (currentIsSingleColumn) HistoryViewMode.SingleColumn else HistoryViewMode.MultiColumn
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        repository.getTaggedImagesChangedLiveData().removeObserver(imagesChangedObserver)
-    }
-
     fun updateImageOrdering(currentUiOrder: List<TaggedImage>) {
         val changedIndices = ArrayList<TaggedImage>(currentUiOrder.size)
         val reverse = currentUiOrder.asReversed()
@@ -73,6 +64,18 @@ class ImagesViewModel(app: Application): BaseViewModel(app) {
                 changedIndices.add(image.apply { this.ordinalNum = i })
         }
         repository.updateTaggedImages(changedIndices)
+    }
+
+    fun onImagesAdded(imageUriList: List<Uri>){
+        repository.insertImages(imageUriList)
+    }
+
+    private fun getCurrentViewMode(): HistoryViewMode {
+        val currentIsSingleColumn =
+                preferences.getInt(
+                        PREFERENCE_KEY_SPAN_COUNT,
+                        HistoryViewMode.MultiColumn.spanCount) == HistoryViewMode.SingleColumn.spanCount
+        return if (currentIsSingleColumn) HistoryViewMode.SingleColumn else HistoryViewMode.MultiColumn
     }
 }
 

@@ -55,7 +55,7 @@ class TagsFragment: BaseFragment() {
             return args.getString(ARG_KEY_IMAGE_ID)
         }
 
-        fun isImage(args: Bundle): Boolean {
+        fun isNewImage(args: Bundle): Boolean {
             return args.containsKey(ARG_KEY_URI)
         }
     }
@@ -90,7 +90,7 @@ class TagsFragment: BaseFragment() {
 
         app_bar_layout.addOnOffsetChangedListener(
                 AppBarLayout.OnOffsetChangedListener { appbar, offset ->
-                    if (appbar == null)
+                    if (this@TagsFragment.view == null)
                         return@OnOffsetChangedListener
                     // If toolbar expanded, it has blurry dark background.
                     // If collapsed - white. To display icons correctly, you need to
@@ -117,7 +117,7 @@ class TagsFragment: BaseFragment() {
         tagsAdapter.itemTouchHelper.attachToRecyclerView(tags)
 
 
-        if (isImage(arguments!!)) {
+        if (isNewImage(arguments!!)) {
             Glide.with(this)
                     .load(arguments!!.getParcelable(ARG_KEY_URI) as Uri)
                     .apply(RequestOptions.centerCropTransform())

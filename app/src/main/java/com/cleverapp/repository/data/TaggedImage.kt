@@ -1,7 +1,10 @@
 package com.cleverapp.repository.data
 
-import androidx.room.*
+import androidx.room.ColumnInfo
 import androidx.room.ColumnInfo.BLOB
+import androidx.room.Entity
+import androidx.room.Ignore
+import androidx.room.PrimaryKey
 import com.cleverapp.repository.database.AppDatabase.Companion.TAGGED_IMAGES_TABLE_NAME
 
 @Entity(tableName = TAGGED_IMAGES_TABLE_NAME)
@@ -16,7 +19,7 @@ data class TaggedImage(
 
     constructor(id: String,
                 previewBytes: ByteArray,
-                tags: List<ImageTag>)
+                tags: List<ImageTag> = emptyList())
             : this(id, previewBytes, 0){
         this.tags = tags
     }

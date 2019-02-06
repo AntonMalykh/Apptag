@@ -13,6 +13,7 @@ import com.cleverapp.repository.tagservice.ServiceTaggedImageLoadingResult
 import com.cleverapp.repository.tagservice.TagService
 import com.cleverapp.utils.MAX_THUMBNAIL_IMAGE_FILE_SIZE
 import com.cleverapp.utils.compressImage
+import com.cleverapp.utils.getImageRotation
 import java.util.*
 
 class RepositoryImpl(
@@ -60,6 +61,18 @@ class RepositoryImpl(
         taggedImagesUpdated.value = true
     }
 
+    override fun insertImages(imageUriList: List<Uri>) {
+        var order = databaseHelper.getAllTaggedImages().size
+        imageUriList.forEach{
+            val id = UUID.randomUUID().toString()
+            val newImage = TaggedImage(id, getImageBytes(it)).apply {
+                ordinalNum = order++
+            }
+            databaseHelper.insertTaggedImage(newImage)
+        }
+        taggedImagesUpdated.value = true
+    }
+
     override fun getSavedTaggedImages(): LiveData<List<TaggedImage>> {
         return MutableLiveData<List<TaggedImage>>()
                 .also { it.value = databaseHelper.getAllTaggedImages() }
@@ -91,7 +104,10 @@ class RepositoryImpl(
 
         cursor?.let {
             if (it.moveToFirst()) {
-                return compressImage(contentResolver.openInputStream(uri), MAX_THUMBNAIL_IMAGE_FILE_SIZE)
+                return compressImage(
+                        contentResolver.openInputStream(uri),
+                        MAX_THUMBNAIL_IMAGE_FILE_SIZE,
+                        getImageRotation(contentResolver.openInputStream(uri)))
             }
             it.close()
         }

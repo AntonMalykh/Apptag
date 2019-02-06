@@ -2,6 +2,9 @@ package com.cleverapp.utils
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import androidx.exifinterface.media.ExifInterface
+import androidx.exifinterface.media.ExifInterface.*
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 
@@ -10,7 +13,16 @@ const val INTENT_IMAGE_TYPE = "image/*"
 const val MAX_THUMBNAIL_IMAGE_FILE_SIZE = 256000
 const val MAX_THUMBNAIL_IMAGE_DIMEN_SIZE = 1024
 
-fun compressImage(originalImageStream: InputStream, desiredImgSize: Int): ByteArray {
+fun getImageRotation(imageInputStream: InputStream): Int {
+    return when (ExifInterface(imageInputStream).getAttribute(TAG_ORIENTATION)?.toInt()) {
+        ORIENTATION_ROTATE_270 -> 270
+        ORIENTATION_ROTATE_180 -> 180
+        ORIENTATION_ROTATE_90 -> 90
+        else -> 0
+    }
+}
+
+fun compressImage(originalImageStream: InputStream, desiredImgSize: Int, rotationDegrees: Int  = 0): ByteArray {
     val original = BitmapFactory.decodeStream(originalImageStream)
 
     val maxDesiredDimen = MAX_THUMBNAIL_IMAGE_DIMEN_SIZE
@@ -33,8 +45,17 @@ fun compressImage(originalImageStream: InputStream, desiredImgSize: Int): ByteAr
         }
     }
 
-    val originalResized = Bitmap.createScaledBitmap(original, newWidth, newHeight, true)
-    original.recycle()
+    val matrix = Matrix().apply {
+        setScale(newWidth.toFloat() / original.width, newHeight.toFloat() / original.height)
+        setRotate(rotationDegrees.toFloat())
+    }
+
+    val originalResized =
+            Bitmap.createBitmap(original, 0, 0, original.width, original.height, matrix, true)
+
+    if (originalResized != original)
+        original.recycle()
+
 
     val START_QUALITY = 80
     val QUALITY_CHANGE_STEP = 10
@@ -52,5 +73,6 @@ fun compressImage(originalImageStream: InputStream, desiredImgSize: Int): ByteAr
     }
     while (compressedSize > desiredImgSize && quality > QUALITY_CHANGE_STEP)
 
+    originalResized.recycle()
     return compressed.toByteArray()
 }

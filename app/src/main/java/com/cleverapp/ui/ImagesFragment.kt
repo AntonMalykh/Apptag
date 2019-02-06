@@ -9,7 +9,7 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.view.MotionEvent
 import android.view.View
-import android.view.View.GONE
+import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
@@ -17,7 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cleverapp.R
 import com.cleverapp.repository.data.TaggedImage
 import com.cleverapp.ui.navigation.NavigationDirections
-import com.cleverapp.ui.recyclerview.HistoryAdapter
+import com.cleverapp.ui.recyclerview.ImagesAdapter
 import com.cleverapp.ui.recyclerview.LayoutParamsProvider
 import com.cleverapp.ui.recyclerview.OnImageMenuClickListener
 import com.cleverapp.ui.viewmodels.HistoryViewMode
@@ -32,18 +32,19 @@ import java.util.*
 
 class ImagesFragment: BaseFragment() {
 
-    override val viewId: Int
-        get() = R.layout.images_fragment
-
     private companion object {
+
         const val REQUEST_PICK_IMAGE = 0
         const val REQUEST_TAKE_PHOTO = 1
-
         const val NEW_IMAGE_OPTION_PHOTO = 0
+
         const val NEW_IMAGE_OPTION_GALLERY = 1
     }
 
-    private lateinit var historyAdapter: HistoryAdapter
+    override val viewId: Int
+        get() = R.layout.images_fragment
+
+    private lateinit var imagesAdapter: ImagesAdapter
     private lateinit var layoutManager: GridLayoutManager
     private lateinit var itemDecoration: SpacesItemDecoration
 
@@ -76,17 +77,17 @@ class ImagesFragment: BaseFragment() {
                 HistoryViewMode.SingleColumn)
         history.addItemDecoration(itemDecoration)
 
-        historyAdapter = HistoryAdapter()
+        imagesAdapter = ImagesAdapter()
                 .also { adapter ->
                     adapter.setOnMenuClickListener(onMenuClickListener)
                     adapter.setOnImageClickListener { taggedImage -> onImageClicked(taggedImage) }
                     adapter.getIsEmptyLiveData()
-                            .observeForever { history.visibility = if (it) GONE else VISIBLE }
+                            .observeForever { history.visibility = if (it) INVISIBLE else VISIBLE }
                 }
 
         layoutManager = GridLayoutManager(activity, HistoryViewMode.SingleColumn.spanCount)
 
-        historyAdapter.itemTouchHelper.attachToRecyclerView(history)
+        imagesAdapter.itemTouchHelper.attachToRecyclerView(history)
 
         multi_fab.apply {
             addOption(NEW_IMAGE_OPTION_PHOTO, R.drawable.ic_add_a_photo_white)
@@ -102,14 +103,14 @@ class ImagesFragment: BaseFragment() {
 
     override fun onPause() {
         super.onPause()
-        viewModel.updateImageOrdering(historyAdapter.getItems())
+        viewModel.updateImageOrdering(imagesAdapter.getItems())
     }
 
     override fun onViewIsLaidOut() {
         super.onViewIsLaidOut()
-        historyAdapter.layoutParamsProvider =
+        imagesAdapter.layoutParamsProvider =
                 view?.width?.let { LayoutParamsProvider(it, viewModel.getViewModeLiveData().value!!) }
-        history.adapter = historyAdapter
+        history.adapter = imagesAdapter
         history.layoutManager = layoutManager
         observeViewModel()
         if (isJustCreated())
@@ -121,10 +122,22 @@ class ImagesFragment: BaseFragment() {
         if (!isExpectedResult(requestCode) || resultCode != RESULT_OK)
             return
 
-        val location: Uri? = if (requestCode == REQUEST_TAKE_PHOTO) capturePhotoUri else data?.data
-        location?.let { navController.navigate(NavigationDirections.historyToEditNewImage(it)) }
-        capturePhotoUri = null
+        val isSingleImage = data?.clipData?.itemCount?.equals(0) ?: false
 
+        if (isSingleImage) {
+            val location: Uri? = if (requestCode == REQUEST_TAKE_PHOTO) capturePhotoUri else data?.data
+            location?.let { navController.navigate(NavigationDirections.historyToEditNewImage(it)) }
+        }
+        else {
+            data?.clipData?.let {
+                val newUris = mutableListOf<Uri>()
+                for (index in 0 until it.itemCount){
+                    newUris.add(it.getItemAt(index).uri)
+                }
+                viewModel.onImagesAdded(newUris)
+            }
+        }
+        capturePhotoUri = null
     }
 
     override fun onTouchEvent(event: MotionEvent?) {
@@ -155,10 +168,10 @@ class ImagesFragment: BaseFragment() {
                         if (mode == HistoryViewMode.SingleColumn) R.drawable.ic_grid_on_black
                         else R.drawable.ic_grid_off_black,
                         null)
-        historyAdapter.layoutParamsProvider?.viewMode = mode
+        imagesAdapter.layoutParamsProvider?.viewMode = mode
         layoutManager.spanCount = mode.spanCount
         itemDecoration.viewMode = mode
-        history.adapter = historyAdapter
+        history.adapter = imagesAdapter
         history.layoutManager = layoutManager
         return true
     }
@@ -166,7 +179,7 @@ class ImagesFragment: BaseFragment() {
     private fun observeViewModel() {
         viewModel.getImagesLiveData().observe(
                 this,
-                Observer { historyAdapter.setItems(it) })
+                Observer { imagesAdapter.setItems(it) })
 
         viewModel.getViewModeLiveData().observe(this, Observer { applyViewMode(it) })
     }
@@ -203,9 +216,11 @@ class ImagesFragment: BaseFragment() {
     private fun startPickingImage() {
         val getIntent = Intent(Intent.ACTION_GET_CONTENT)
         getIntent.type = INTENT_IMAGE_TYPE
+        getIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
 
         val pickIntent = Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         pickIntent.type = INTENT_IMAGE_TYPE
+        pickIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
 
         val chooserIntent = Intent.createChooser(getIntent, getString(R.string.image_chooser_title))
         chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(pickIntent))
