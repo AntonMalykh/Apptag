@@ -4,6 +4,7 @@ import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.app.Activity.RESULT_OK
 import android.content.*
 import android.graphics.Rect
+import android.graphics.drawable.AnimatedVectorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -69,7 +70,18 @@ class ImagesFragment: BaseFragment() {
 
         toolbar.title = "#" + resources.getString(activity?.applicationInfo?.labelRes!!)
         toolbar.inflateMenu(R.menu.history_fragment_menu)
-        toolbar.setOnMenuItemClickListener { viewModel.onGridMenuClicked(); true }
+        toolbar.setOnMenuItemClickListener {
+            when (it.itemId) {
+                R.id.grid -> {
+                    viewModel.onGridMenuClicked()
+                    (toolbar.menu.findItem(R.id.delete).icon as AnimatedVectorDrawable).reset()
+                }
+                R.id.delete -> {
+                    (it.icon as AnimatedVectorDrawable).start()
+                }
+            }
+            true
+        }
 
         history.setPadding(0, resources.getInteger(R.integer.history_item_space), 0, 0)
         itemDecoration = SpacesItemDecoration(
@@ -122,19 +134,24 @@ class ImagesFragment: BaseFragment() {
         if (!isExpectedResult(requestCode) || resultCode != RESULT_OK)
             return
 
-        val isSingleImage = data?.clipData?.itemCount?.equals(0) ?: false
+        val isMultipleImages = data?.clipData?.itemCount != null
 
-        if (isSingleImage) {
-            val location: Uri? = if (requestCode == REQUEST_TAKE_PHOTO) capturePhotoUri else data?.data
-            location?.let { navController.navigate(NavigationDirections.historyToEditNewImage(it)) }
-        }
-        else {
+        if (isMultipleImages) {
             data?.clipData?.let {
+                if (it.itemCount == 0)
+                    return@let
                 val newUris = mutableListOf<Uri>()
                 for (index in 0 until it.itemCount){
                     newUris.add(it.getItemAt(index).uri)
                 }
                 viewModel.onImagesAdded(newUris)
+            }
+        }
+        else {
+            val location: Uri? = if (requestCode == REQUEST_TAKE_PHOTO) capturePhotoUri else data?.data
+            location?.let {
+                if (isNavigationAllowed())
+                    navController.navigate(NavigationDirections.historyToEditNewImage(it))
             }
         }
         capturePhotoUri = null
@@ -159,7 +176,8 @@ class ImagesFragment: BaseFragment() {
     }
 
     private fun onImageClicked(taggedImage: TaggedImage) {
-        navController.navigate(NavigationDirections.historyToEditSavedImage(taggedImage.id))
+        if (isNavigationAllowed())
+            navController.navigate(NavigationDirections.historyToEditSavedImage(taggedImage.id))
     }
 
     private fun applyViewMode(mode: HistoryViewMode): Boolean {

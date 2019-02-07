@@ -36,8 +36,11 @@ abstract class BaseFragment : Fragment() {
                 }
             }
 
+    private var myDestinationId: Int = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        myDestinationId = navController.currentDestination?.id ?: 0
         isJustCreated = savedInstanceState == null
     }
 
@@ -94,4 +97,7 @@ abstract class BaseFragment : Fragment() {
         return isJustCreated
     }
 
+    protected fun isNavigationAllowed(): Boolean {
+        return navController.currentDestination?.id == myDestinationId ?: true
+    }
 }

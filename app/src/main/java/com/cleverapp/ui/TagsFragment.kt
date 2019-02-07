@@ -66,6 +66,7 @@ class TagsFragment: BaseFragment() {
     private val viewModel: TagsViewModel by getViewModel(TagsViewModel::class.java)
 
     private lateinit var tagsAdapter: TagsAdapter
+
     /**
      * tag that is currently being edited
      */
@@ -75,11 +76,16 @@ class TagsFragment: BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black)
-        toolbar.setNavigationOnClickListener { navController.popBackStack() }
+        toolbar.setNavigationOnClickListener {
+            if (isNavigationAllowed())
+                navController.popBackStack()
+        }
         toolbar.inflateMenu(R.menu.menu_fragment_tags)
         toolbar.setOnMenuItemClickListener {
             when {
-                it.isEnabled -> {
+                it.itemId == R.id.done -> {
+                    if (!isNavigationAllowed())
+                        return@setOnMenuItemClickListener false
                     viewModel.saveImageTags(tagsAdapter.getItems())
                     navController.popBackStack()
                     true
