@@ -1,5 +1,7 @@
 package com.cleverapp.ui.recyclerview
 
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -30,6 +32,7 @@ class ImagesAdapter: BaseAdapter<TaggedImage>() {
     var layoutParamsProvider: LayoutParamsProvider? = null
 
     private var onImageClickListener: ((TaggedImage) -> Unit)? = null
+    private var onImageDoubleClickListener: ((TaggedImage) -> Unit)? = null
     private var onMenuClickListener: OnImageMenuClickListener? = null
     private var mode = Mode.Normal
     private val selectedImages = mutableListOf<TaggedImage>()
@@ -67,12 +70,23 @@ class ImagesAdapter: BaseAdapter<TaggedImage>() {
         return holder
     }
 
+    override fun onViewAttachedToWindow(holder: BaseViewHolder<TaggedImage>) {
+        super.onViewAttachedToWindow(holder)
+        if (holder is ImageViewHolder && holder.mod != mode) {
+            holder.setMode(mode)
+        }
+    }
+
     fun setOnMenuClickListener(onMenuClickListener: OnImageMenuClickListener) {
         this.onMenuClickListener = onMenuClickListener
     }
 
     fun setOnImageClickListener(listener: (TaggedImage) -> Unit) {
         this.onImageClickListener = listener
+    }
+
+    fun setOnImageDoubleClickListener(listener: (TaggedImage) -> Unit) {
+        this.onImageDoubleClickListener = listener
     }
 
     fun setMode(mode: Mode) {
@@ -89,10 +103,30 @@ class ImagesAdapter: BaseAdapter<TaggedImage>() {
             BaseViewHolder<TaggedImage>(
                     parent, R.layout.images_view_holder) {
 
+        internal var mod: Mode = Mode.Normal
+
         private val preview: ImageView = itemView.findViewById(R.id.preview)
         private val tags: TextView = itemView.findViewById(R.id.tags)
         private val menu: ImageButton = itemView.findViewById(R.id.menu)
         private val check: View = itemView.findViewById(R.id.check)
+
+        private var onSingleClick: () -> Unit = { onImageClickListener?.invoke(getItem()) }
+        private val tapListener = object: GestureDetector.SimpleOnGestureListener(){
+            override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
+                onSingleClick.invoke()
+                return true
+            }
+
+            override fun onDoubleTap(e: MotionEvent?): Boolean {
+                return onImageDoubleClickListener?.let {
+                    it.invoke(getItem())
+                    true
+                } ?: false
+            }
+        }
+        private val detector = GestureDetector(itemView.context, tapListener).apply{
+            setOnDoubleTapListener(tapListener)
+        }
 
         override fun bindItem(item: TaggedImage) {
             super.bindItem(item)
@@ -103,22 +137,21 @@ class ImagesAdapter: BaseAdapter<TaggedImage>() {
                     .into(preview)
             tags.text = item.tags.toPlainText()
             menu.setOnClickListener { onMenuClicked() }
-            setMode(mode,selectedImages.contains(getItem()))
+            setMode(mod, selectedImages.contains(getItem()))
+            itemView.setOnTouchListener{ _, event -> detector.onTouchEvent(event) }
         }
 
         fun setMode(mode: Mode) = setMode(mode, true)
 
         private fun setMode(mode: Mode, animateChange: Boolean) {
-            val onItemClickListener: View.OnClickListener
+            this.mod = mode
             when (mode) {
                 Mode.Normal -> {
-                    onItemClickListener = View.OnClickListener {
-                        onImageClickListener?.invoke(getItem())
-                    }
+                     onSingleClick = { onImageClickListener?.invoke(getItem()) }
                     check.visibility = GONE
                 }
                 Mode.Remove -> {
-                    onItemClickListener = View.OnClickListener {
+                    onSingleClick = {
                         if (selectedImages.contains(getItem())){
                             selectedImages.remove(getItem())
                             check.isEnabled = false
@@ -135,7 +168,6 @@ class ImagesAdapter: BaseAdapter<TaggedImage>() {
                 }
             }
             setScale(selectedImages.contains(getItem()), animateChange)
-            itemView.setOnClickListener(onItemClickListener)
         }
 
         private fun setScale(scaleInside: Boolean, animate: Boolean = true) {

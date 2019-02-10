@@ -3,6 +3,7 @@ package com.cleverapp.ui
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.GONE
@@ -13,12 +14,12 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.cleverapp.R
 import com.cleverapp.repository.data.ImageTag
+import com.cleverapp.ui.navigation.NavigationDirections
 import com.cleverapp.ui.recyclerview.TagsAdapter
 import com.cleverapp.ui.viewmodels.TagsViewModel
 import com.cleverapp.utils.isVisibleAreaContains
 import com.google.android.material.appbar.AppBarLayout
 import kotlinx.android.synthetic.main.tags_fragment.*
-
 class TagsFragment: BaseFragment() {
 
     companion object {
@@ -64,13 +65,31 @@ class TagsFragment: BaseFragment() {
         get() = R.layout.tags_fragment
 
     private val viewModel: TagsViewModel by getViewModel(TagsViewModel::class.java)
-
     private lateinit var tagsAdapter: TagsAdapter
 
     /**
      * tag that is currently being edited
      */
     private var currentEditedTag: ImageTag? = null
+
+    private val onPreviewDoubleTapDetector =
+            with (
+                    object: GestureDetector.SimpleOnGestureListener(){
+                        override fun onDoubleTap(e: MotionEvent?): Boolean {
+                            return if (isNavigationAllowed() && viewModel.imageBytes.value != null) {
+                                navController.navigate(
+                                        NavigationDirections.toImagePreview(
+                                                this@TagsFragment.javaClass,
+                                                viewModel.imageBytes.value!!))
+                                true
+                            }
+                            else
+                                false
+                        }
+                    })
+            {
+                GestureDetector(activity, this).also { it.setOnDoubleTapListener(this) }
+            }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -238,3 +257,4 @@ class TagsFragment: BaseFragment() {
         ai_options.bringToFront()
     }
 }
+

@@ -8,4 +8,5 @@
     <dimen name="elevation_default">8dp</dimen>
     <dimen name="tags_appbar_height">304dp</dimen>
     <dimen name="tags_appbar_scrim_threshold">96dp</dimen>
+    <dimen name="icon_large_size">32dp</dimen>
 </resources>

@@ -88,7 +88,8 @@ class ImagesFragment: BaseFragment() {
         imagesAdapter = ImagesAdapter()
                 .also { adapter ->
                     adapter.setOnMenuClickListener(onMenuClickListener)
-                    adapter.setOnImageClickListener { taggedImage -> onImageClicked(taggedImage) }
+                    adapter.setOnImageClickListener(::onImageClicked)
+                    adapter.setOnImageDoubleClickListener(::onImageDoubleClicked)
                     adapter.getIsEmptyLiveData()
                             .observeForever { images.visibility = if (it) INVISIBLE else VISIBLE }
                 }
@@ -230,6 +231,11 @@ class ImagesFragment: BaseFragment() {
     private fun onImageClicked(taggedImage: TaggedImage) {
         if (isNavigationAllowed())
             navController.navigate(NavigationDirections.historyToEditSavedImage(taggedImage.id))
+    }
+
+    private fun onImageDoubleClicked(taggedImage: TaggedImage) {
+        if (isNavigationAllowed())
+            navController.navigate(NavigationDirections.toImagePreview(this.javaClass, taggedImage.previewBytes))
     }
 
     private fun applyViewMode(mode: HistoryViewMode): Boolean {

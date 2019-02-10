@@ -11,11 +11,9 @@ class ViewModelFactory(
     : ViewModelProvider.AndroidViewModelFactory(app){
 
     override fun <T: ViewModel?> create(modelClass: Class<T>): T {
-        return when {
-            (modelClass.isAssignableFrom(ImagesViewModel::class.java)) ->
-                ImagesViewModel(app) as T
-            (modelClass.isAssignableFrom(TagsViewModel::class.java)) ->
-                TagsViewModel(app, arguments!!) as T
+        return when (modelClass){
+            ImagesViewModel::class.java -> ImagesViewModel(app) as T
+            TagsViewModel::class.java -> TagsViewModel(app, arguments!!) as T
             else -> throw IllegalStateException("ViewModel was not found")
         }
     }
