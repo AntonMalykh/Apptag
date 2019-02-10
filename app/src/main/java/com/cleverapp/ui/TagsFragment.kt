@@ -80,7 +80,7 @@ class TagsFragment: BaseFragment() {
             if (isNavigationAllowed())
                 navController.popBackStack()
         }
-        toolbar.inflateMenu(R.menu.menu_fragment_tags)
+        toolbar.inflateMenu(R.menu.menu_tags_fragment)
         toolbar.setOnMenuItemClickListener {
             when {
                 it.itemId == R.id.done -> {

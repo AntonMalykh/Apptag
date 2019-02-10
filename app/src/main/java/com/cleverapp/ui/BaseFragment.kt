@@ -19,13 +19,13 @@ abstract class BaseFragment : Fragment() {
 
     abstract val viewId: Int
 
-    private var isJustCreated: Boolean = true
-
     protected val navController: NavController
         get() {
             return NavHostFragment.findNavController(this)
         }
 
+    private var myDestinationId: Int = 0
+    private var isJustCreated: Boolean = true
     private val globalLayoutListener: ViewTreeObserver.OnGlobalLayoutListener =
             object : ViewTreeObserver.OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
@@ -35,8 +35,6 @@ abstract class BaseFragment : Fragment() {
                     }
                 }
             }
-
-    private var myDestinationId: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

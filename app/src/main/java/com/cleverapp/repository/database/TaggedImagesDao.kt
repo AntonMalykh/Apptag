@@ -25,7 +25,7 @@ interface TaggedImagesDao {
     fun insertTaggedImage(taggedImage: TaggedImage)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    fun updateTaggedImages(imagesToUpdate: List<TaggedImage>)
+    fun updateTaggedImages(imagesToUpdate: Collection<TaggedImage>)
 
     @Delete
     fun deleteSavedImage(image: TaggedImage)

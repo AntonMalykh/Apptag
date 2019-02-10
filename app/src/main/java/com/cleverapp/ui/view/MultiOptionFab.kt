@@ -6,9 +6,11 @@ import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.OvershootInterpolator
 import android.widget.Space
 import androidx.annotation.DrawableRes
 import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.cleverapp.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -18,6 +20,10 @@ class MultiOptionFab@JvmOverloads constructor(
         defStyleAttr: Int = 0)
     : LinearLayoutCompat(context, attrs, defStyleAttr),
         View.OnClickListener {
+
+    private companion object {
+        const val HIDE_SHOW_ANIMATION_DURATION = 300
+    }
 
     private val fab: FloatingActionButton = FloatingActionButton(context)
     private val optionButtons = mutableListOf<FloatingActionButton>()
@@ -53,6 +59,8 @@ class MultiOptionFab@JvmOverloads constructor(
         onOptionsClickListener = listener
     }
 
+    fun isExpanded() = isExpanded
+
     fun expand() {
         removeView(fab)
         optionButtons.forEach {
@@ -72,6 +80,26 @@ class MultiOptionFab@JvmOverloads constructor(
             addView(fab)
         }
         isExpanded = false
+    }
+
+    fun hide() {
+        isClickable = false
+        animate()
+                .scaleX(0f)
+                .scaleY(0f)
+                .setDuration(HIDE_SHOW_ANIMATION_DURATION.toLong())
+                .setInterpolator(FastOutSlowInInterpolator())
+                .start()
+    }
+
+    fun show() {
+        isClickable = true
+        animate()
+                .scaleX(1f)
+                .scaleY(1f)
+                .setDuration(HIDE_SHOW_ANIMATION_DURATION.toLong())
+                .setInterpolator(OvershootInterpolator())
+                .start()
     }
 
     fun addOption(optionId: Int, @DrawableRes iconResId: Int) {
@@ -99,7 +127,7 @@ class MultiOptionFab@JvmOverloads constructor(
         return Space(context).apply {
             layoutParams =
                     ViewGroup.LayoutParams(
-                            context.resources.getDimensionPixelSize(R.dimen.offset_medium),
+                            context.resources.getDimensionPixelSize(R.dimen.offset_small),
                             0)
         }
     }

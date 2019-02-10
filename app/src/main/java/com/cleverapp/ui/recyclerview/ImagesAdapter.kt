@@ -1,10 +1,14 @@
 package com.cleverapp.ui.recyclerview
 
+import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -12,15 +16,23 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.request.RequestOptions
 import com.cleverapp.R
 import com.cleverapp.repository.data.TaggedImage
+import com.cleverapp.ui.Mode
 import com.cleverapp.utils.toPlainText
 import java.util.*
 
 class ImagesAdapter: BaseAdapter<TaggedImage>() {
 
-    private var onImageClickListener: ((TaggedImage) -> Unit)? = null
-    private var onMenuClickListener: OnImageMenuClickListener? = null
+    private companion object {
+        const val ITEM_SELECTED_SCALE = 0.8f
+        const val ITEM_NORMAL_SCALE = 1f
+    }
 
     var layoutParamsProvider: LayoutParamsProvider? = null
+
+    private var onImageClickListener: ((TaggedImage) -> Unit)? = null
+    private var onMenuClickListener: OnImageMenuClickListener? = null
+    private var mode = Mode.Normal
+    private val selectedImages = mutableListOf<TaggedImage>()
 
     override val itemTouchHelper = ItemTouchHelper(
             object: ItemTouchHelper.Callback(){
@@ -63,13 +75,24 @@ class ImagesAdapter: BaseAdapter<TaggedImage>() {
         this.onImageClickListener = listener
     }
 
+    fun setMode(mode: Mode) {
+        this.mode = mode
+        if (mode == Mode.Normal)
+            selectedImages.clear()
+    }
+
+    fun getSelectedImages(): List<TaggedImage> {
+        return selectedImages
+    }
+
     inner class ImageViewHolder(parent: ViewGroup):
             BaseViewHolder<TaggedImage>(
-                    parent, R.layout.history_view_holder) {
+                    parent, R.layout.images_view_holder) {
 
         private val preview: ImageView = itemView.findViewById(R.id.preview)
         private val tags: TextView = itemView.findViewById(R.id.tags)
         private val menu: ImageButton = itemView.findViewById(R.id.menu)
+        private val check: View = itemView.findViewById(R.id.check)
 
         override fun bindItem(item: TaggedImage) {
             super.bindItem(item)
@@ -78,27 +101,73 @@ class ImagesAdapter: BaseAdapter<TaggedImage>() {
                     .apply(RequestOptions.centerCropTransform())
                     .transition(DrawableTransitionOptions.withCrossFade())
                     .into(preview)
-            itemView.setOnClickListener{ onImageClickListener?.invoke(item) }
             tags.text = item.tags.toPlainText()
-            menu.setOnClickListener {
-                val menu = PopupMenu(menu.context, menu)
-                menu.inflate(R.menu.image_item_menu)
-                menu.setOnMenuItemClickListener { menuItem ->
-                    return@setOnMenuItemClickListener when {
-                        menuItem.itemId == R.id.remove -> {
-                            onMenuClickListener?.onRemoveClicked(item)
-                            true
-                        }
-                        menuItem.itemId == R.id.copy -> {
-                            onMenuClickListener?.onCopyClicked(item)
-                            true
-                        }
-                        else ->
-                            false
+            menu.setOnClickListener { onMenuClicked() }
+            setMode(mode,selectedImages.contains(getItem()))
+        }
+
+        fun setMode(mode: Mode) = setMode(mode, true)
+
+        private fun setMode(mode: Mode, animateChange: Boolean) {
+            val onItemClickListener: View.OnClickListener
+            when (mode) {
+                Mode.Normal -> {
+                    onItemClickListener = View.OnClickListener {
+                        onImageClickListener?.invoke(getItem())
                     }
+                    check.visibility = GONE
                 }
-                menu.show()
+                Mode.Remove -> {
+                    onItemClickListener = View.OnClickListener {
+                        if (selectedImages.contains(getItem())){
+                            selectedImages.remove(getItem())
+                            check.isEnabled = false
+                            setScale(false)
+                        }
+                        else {
+                            selectedImages.add(getItem())
+                            check.isEnabled = true
+                            setScale(true)
+                        }
+                    }
+                    check.visibility = VISIBLE
+                    check.isEnabled = selectedImages.contains(getItem())
+                }
             }
+            setScale(selectedImages.contains(getItem()), animateChange)
+            itemView.setOnClickListener(onItemClickListener)
+        }
+
+        private fun setScale(scaleInside: Boolean, animate: Boolean = true) {
+            val scale = if (scaleInside) ITEM_SELECTED_SCALE else ITEM_NORMAL_SCALE
+            if (animate) {
+                itemView.animate()
+                        .scaleX(scale)
+                        .scaleY(scale)
+                        .setInterpolator(FastOutSlowInInterpolator())
+                        .start()
+            }
+            else
+                itemView.apply { scaleX = scale; scaleY = scale }
+        }
+
+        private fun onMenuClicked() {
+            val menu = PopupMenu(menu.context, menu)
+            menu.inflate(R.menu.image_item_menu)
+            menu.setOnMenuItemClickListener { menuItem ->
+                return@setOnMenuItemClickListener when {
+                    menuItem.itemId == R.id.remove -> {
+                        onMenuClickListener?.onRemoveClicked(getItem())
+                        true
+                    }
+                    menuItem.itemId == R.id.copy -> {
+                        onMenuClickListener?.onCopyClicked(getItem())
+                        true
+                    }
+                    else -> false
+                }
+            }
+            menu.show()
         }
     }
 }

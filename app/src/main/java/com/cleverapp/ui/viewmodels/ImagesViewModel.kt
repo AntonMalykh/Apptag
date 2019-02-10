@@ -18,17 +18,17 @@ class ImagesViewModel(app: Application): BaseViewModel(app) {
     }
     private val request = MutableLiveData<Boolean>()
     private val images = Transformations.switchMap(request) {
-        repository.getSavedTaggedImages()
+        repository.getImages()
     }
     private val viewMode = MutableLiveData<HistoryViewMode>().also { it.value = getCurrentViewMode() }
 
     init {
-        repository.getTaggedImagesChangedLiveData().observeForever(imagesChangedObserver)
+        repository.getImagesChangedLiveData().observeForever(imagesChangedObserver)
     }
 
     override fun onCleared() {
         super.onCleared()
-        repository.getTaggedImagesChangedLiveData().removeObserver(imagesChangedObserver)
+        repository.getImagesChangedLiveData().removeObserver(imagesChangedObserver)
     }
 
     fun getImagesLiveData(): LiveData<List<TaggedImage>> = images
@@ -38,12 +38,11 @@ class ImagesViewModel(app: Application): BaseViewModel(app) {
         request.value = true
     }
 
-    fun onRemoveClicked(image: TaggedImage) {
-        repository.deleteSavedTaggedImage(image)
-        updateHistory()
+    fun removeImage(image: TaggedImage) {
+        repository.removeImage(image)
     }
 
-    fun onGridMenuClicked() {
+    fun changeGrid() {
         val current = getCurrentViewMode()
         val toApply =
                 if (current == HistoryViewMode.SingleColumn) HistoryViewMode.MultiColumn
@@ -63,11 +62,15 @@ class ImagesViewModel(app: Application): BaseViewModel(app) {
             if (image.ordinalNum != i)
                 changedIndices.add(image.apply { this.ordinalNum = i })
         }
-        repository.updateTaggedImages(changedIndices)
+        repository.updateImages(changedIndices)
     }
 
-    fun onImagesAdded(imageUriList: List<Uri>){
-        repository.insertImages(imageUriList)
+    fun addImage(imageUriList: List<Uri>){
+        repository.saveImages(imageUriList)
+    }
+
+    fun removeImages(images: List<TaggedImage>) {
+        repository.removeImages(images)
     }
 
     private fun getCurrentViewMode(): HistoryViewMode {

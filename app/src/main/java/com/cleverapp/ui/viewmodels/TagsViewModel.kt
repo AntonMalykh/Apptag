@@ -26,7 +26,7 @@ class TagsViewModel(app: Application,
     private val imageRequest = MutableLiveData<Boolean>()
     private val imageLoading = Transformations.switchMap(imageRequest){
         loading.value = true
-        repository.getSavedTaggedImage(imageId!!)
+        repository.getImage(imageId!!)
     }
     private val tagsRequest = MutableLiveData<Boolean>()
     private var imageId: String? = null
@@ -64,7 +64,7 @@ class TagsViewModel(app: Application,
         when {
             TagsFragment.isNewImage(tagsArguments) ->
                 TagsFragment.extractImageUri(tagsArguments)?.let { imageUri ->
-                    imageBytes.value = repository.getImageBytes(imageUri)
+                    imageBytes.value = repository.makeImageBytes(imageUri)
                 }
             else ->
                 TagsFragment.extractImageId(tagsArguments)?.let { imageId ->
@@ -87,10 +87,10 @@ class TagsViewModel(app: Application,
 
     fun saveImageTags(currentUiOrder: List<ImageTag>) {
         if (imageId == null)
-            repository.saveTaggedImage(imageBytes.value!!, currentUiOrder)
+            repository.saveImage(imageBytes.value!!, currentUiOrder)
         else
             imageId?.let {
-                repository.updateTaggedImage(it, updateTagsOrdering(currentUiOrder))
+                repository.updateImage(it, updateTagsOrdering(currentUiOrder))
             }
     }
 

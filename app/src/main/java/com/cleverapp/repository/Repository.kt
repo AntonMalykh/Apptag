@@ -7,26 +7,28 @@ import com.cleverapp.repository.data.TaggedImage
 
 interface Repository {
 
-    fun getTaggedImagesChangedLiveData(): LiveData<Boolean>
+    fun getImagesChangedLiveData(): LiveData<Boolean>
 
-    fun getSavedTaggedImages(): LiveData<List<TaggedImage>>
+    fun getImage(imageId: String): LiveData<TaggedImage>
 
-    fun deleteSavedTaggedImage(image: TaggedImage)
+    fun getImages(): LiveData<List<TaggedImage>>
 
-    fun saveTaggedImage(previewBytes: ByteArray, tags: List<ImageTag>)
+    fun saveImage(previewBytes: ByteArray, tags: List<ImageTag>)
 
-    fun getSavedTaggedImage(imageId: String): LiveData<TaggedImage>
+    fun saveImages(imageUriList: List<Uri>)
 
-    fun updateTaggedImages(imagesToUpdate: List<TaggedImage>)
+    fun removeImage(image: TaggedImage)
 
-    fun updateTaggedImage(imageId: String, newTags: List<ImageTag>)
+    fun removeImages(images: Collection<TaggedImage>)
 
-    fun getImageBytes(uri: Uri): ByteArray
+    fun updateImage(imageId: String, newTags: List<ImageTag>)
+
+    fun updateImages(imagesToUpdate: Collection<TaggedImage>)
 
     fun getImageTags(imageBytes: ByteArray,
                      tagsLanguage: Language,
                      tagsCount: Int)
             : LiveData<TagsLoadingResult>
 
-    fun insertImages(imageUriList: List<Uri>)
+    fun makeImageBytes(uri: Uri): ByteArray
 }

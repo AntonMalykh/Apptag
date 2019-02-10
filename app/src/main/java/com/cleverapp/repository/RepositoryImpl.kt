@@ -23,11 +23,62 @@ class RepositoryImpl(
     : Repository {
 
     private val databaseHelper = DatabaseHelper(database)
-
     private val taggedImagesUpdated = MutableLiveData<Boolean>()
 
-    override fun getTaggedImagesChangedLiveData(): LiveData<Boolean> {
+    override fun getImagesChangedLiveData(): LiveData<Boolean> {
         return taggedImagesUpdated
+    }
+
+    override fun getImage(imageId: String): LiveData<TaggedImage> {
+        val data = MutableLiveData<TaggedImage>()
+        data.value = databaseHelper.getTaggedImage(imageId)
+        return data
+    }
+
+    override fun getImages(): LiveData<List<TaggedImage>> {
+        return MutableLiveData<List<TaggedImage>>()
+                .also { it.value = databaseHelper.getAllTaggedImages() }
+    }
+
+    override fun saveImage(previewBytes: ByteArray, tags: List<ImageTag>) {
+        val id = UUID.randomUUID().toString()
+        tags.forEach { it.imageId = id }
+        val newImage = TaggedImage(id, previewBytes, tags)
+        newImage.ordinalNum = databaseHelper.getAllTaggedImages().size
+        databaseHelper.insertTaggedImage(newImage)
+        taggedImagesUpdated.value = true
+    }
+
+    override fun saveImages(imageUriList: List<Uri>) {
+        var order = databaseHelper.getAllTaggedImages().size
+        imageUriList.forEach{
+            val id = UUID.randomUUID().toString()
+            val newImage = TaggedImage(id, makeImageBytes(it)).apply {
+                ordinalNum = order++
+            }
+            databaseHelper.insertTaggedImage(newImage)
+        }
+        taggedImagesUpdated.value = true
+    }
+
+    override fun removeImage(image: TaggedImage) {
+        databaseHelper.deleteSavedImage(image)
+        taggedImagesUpdated.value = true
+    }
+
+    override fun removeImages(images: Collection<TaggedImage>) {
+        images.forEach{ databaseHelper.deleteSavedImage(it) }
+        taggedImagesUpdated.value = true
+    }
+
+    override fun updateImage(imageId: String, newTags: List<ImageTag>) {
+        newTags.forEach { it.imageId = imageId }
+        databaseHelper.updateImageTags(imageId, newTags)
+        taggedImagesUpdated.value = true
+    }
+
+    override fun updateImages(imagesToUpdate: Collection<TaggedImage>) {
+        databaseHelper.updateTaggedImages(imagesToUpdate)
     }
 
     override fun getImageTags(imageBytes: ByteArray,
@@ -46,55 +97,7 @@ class RepositoryImpl(
         return data
     }
 
-    override fun getSavedTaggedImage(imageId: String): LiveData<TaggedImage> {
-        val data = MutableLiveData<TaggedImage>()
-        data.value = databaseHelper.getTaggedImage(imageId)
-        return data
-    }
-
-    override fun saveTaggedImage(previewBytes: ByteArray, tags: List<ImageTag>) {
-        val id = UUID.randomUUID().toString()
-        tags.forEach { it.imageId = id }
-        val newImage = TaggedImage(id, previewBytes, tags)
-        newImage.ordinalNum = databaseHelper.getAllTaggedImages().size
-        databaseHelper.insertTaggedImage(newImage)
-        taggedImagesUpdated.value = true
-    }
-
-    override fun insertImages(imageUriList: List<Uri>) {
-        var order = databaseHelper.getAllTaggedImages().size
-        imageUriList.forEach{
-            val id = UUID.randomUUID().toString()
-            val newImage = TaggedImage(id, getImageBytes(it)).apply {
-                ordinalNum = order++
-            }
-            databaseHelper.insertTaggedImage(newImage)
-        }
-        taggedImagesUpdated.value = true
-    }
-
-    override fun getSavedTaggedImages(): LiveData<List<TaggedImage>> {
-        return MutableLiveData<List<TaggedImage>>()
-                .also { it.value = databaseHelper.getAllTaggedImages() }
-    }
-
-    override fun deleteSavedTaggedImage(image: TaggedImage) {
-        databaseHelper.deleteSavedImage(image)
-        taggedImagesUpdated.value = true
-    }
-
-    override fun updateTaggedImages(imagesToUpdate: List<TaggedImage>) {
-        databaseHelper.updateTaggedImages(imagesToUpdate)
-    }
-
-
-    override fun updateTaggedImage(imageId: String, newTags: List<ImageTag>) {
-        newTags.forEach { it.imageId = imageId }
-        databaseHelper.updateImageTags(imageId, newTags)
-        taggedImagesUpdated.value = true
-    }
-
-    override fun getImageBytes(uri: Uri): ByteArray {
+    override fun makeImageBytes(uri: Uri): ByteArray {
         val cursor = contentResolver.query(
                 uri,
                 null,

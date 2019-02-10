@@ -8,15 +8,20 @@ import android.graphics.drawable.AnimatedVectorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cleverapp.R
 import com.cleverapp.repository.data.TaggedImage
+import com.cleverapp.ui.Mode.Normal
+import com.cleverapp.ui.Mode.Remove
 import com.cleverapp.ui.navigation.NavigationDirections
 import com.cleverapp.ui.recyclerview.ImagesAdapter
 import com.cleverapp.ui.recyclerview.LayoutParamsProvider
@@ -37,9 +42,10 @@ class ImagesFragment: BaseFragment() {
 
         const val REQUEST_PICK_IMAGE = 0
         const val REQUEST_TAKE_PHOTO = 1
-        const val NEW_IMAGE_OPTION_PHOTO = 0
 
+        const val NEW_IMAGE_OPTION_PHOTO = 0
         const val NEW_IMAGE_OPTION_GALLERY = 1
+        const val NEW_IMAGE_OPTION_FILES = 2
     }
 
     override val viewId: Int
@@ -52,10 +58,11 @@ class ImagesFragment: BaseFragment() {
     private val viewModel: ImagesViewModel by getViewModel(ImagesViewModel::class.java)
 
     private var capturePhotoUri: Uri? = null
+    private var mode = Normal
 
     private var onMenuClickListener = object: OnImageMenuClickListener{
         override fun onRemoveClicked(image: TaggedImage) {
-            viewModel.onRemoveClicked(image)
+            viewModel.removeImage(image)
         }
 
         override fun onCopyClicked(image: TaggedImage) {
@@ -69,44 +76,35 @@ class ImagesFragment: BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         toolbar.title = "#" + resources.getString(activity?.applicationInfo?.labelRes!!)
-        toolbar.inflateMenu(R.menu.history_fragment_menu)
-        toolbar.setOnMenuItemClickListener {
-            when (it.itemId) {
-                R.id.grid -> {
-                    viewModel.onGridMenuClicked()
-                    (toolbar.menu.findItem(R.id.delete).icon as AnimatedVectorDrawable).reset()
-                }
-                R.id.delete -> {
-                    (it.icon as AnimatedVectorDrawable).start()
-                }
-            }
-            true
-        }
+        toolbar.inflateMenu(R.menu.menu_images_fragment)
+        toolbar.setOnMenuItemClickListener { onMenuItemClicked(it) }
 
-        history.setPadding(0, resources.getInteger(R.integer.history_item_space), 0, 0)
+        images.setPadding(0, resources.getInteger(R.integer.history_item_space), 0, 0)
         itemDecoration = SpacesItemDecoration(
                 resources.getInteger(R.integer.history_item_space),
                 HistoryViewMode.SingleColumn)
-        history.addItemDecoration(itemDecoration)
+        images.addItemDecoration(itemDecoration)
 
         imagesAdapter = ImagesAdapter()
                 .also { adapter ->
                     adapter.setOnMenuClickListener(onMenuClickListener)
                     adapter.setOnImageClickListener { taggedImage -> onImageClicked(taggedImage) }
                     adapter.getIsEmptyLiveData()
-                            .observeForever { history.visibility = if (it) INVISIBLE else VISIBLE }
+                            .observeForever { images.visibility = if (it) INVISIBLE else VISIBLE }
                 }
 
         layoutManager = GridLayoutManager(activity, HistoryViewMode.SingleColumn.spanCount)
 
-        imagesAdapter.itemTouchHelper.attachToRecyclerView(history)
+        imagesAdapter.itemTouchHelper.attachToRecyclerView(images)
 
         multi_fab.apply {
-            addOption(NEW_IMAGE_OPTION_PHOTO, R.drawable.ic_add_a_photo_white)
-            addOption(NEW_IMAGE_OPTION_GALLERY, R.drawable.ic_photo_library_white)
+            addOption(NEW_IMAGE_OPTION_FILES, R.drawable.ic_outline_folder_open_white)
+            addOption(NEW_IMAGE_OPTION_PHOTO, R.drawable.ic_outline_add_a_photo_white)
+            addOption(NEW_IMAGE_OPTION_GALLERY, R.drawable.ic_outline_photo_library_white)
             setOnOptionsClickListener {
                 when (it) {
-                    NEW_IMAGE_OPTION_GALLERY -> startPickingImage()
+                    NEW_IMAGE_OPTION_GALLERY -> startPickingImageFromGallery()
+                    NEW_IMAGE_OPTION_FILES -> startPickingImageFromFiles()
                     NEW_IMAGE_OPTION_PHOTO -> startTakingPhoto()
                 }
             }
@@ -122,8 +120,8 @@ class ImagesFragment: BaseFragment() {
         super.onViewIsLaidOut()
         imagesAdapter.layoutParamsProvider =
                 view?.width?.let { LayoutParamsProvider(it, viewModel.getViewModeLiveData().value!!) }
-        history.adapter = imagesAdapter
-        history.layoutManager = layoutManager
+        images.adapter = imagesAdapter
+        images.layoutManager = layoutManager
         observeViewModel()
         if (isJustCreated())
             viewModel.updateHistory()
@@ -144,7 +142,7 @@ class ImagesFragment: BaseFragment() {
                 for (index in 0 until it.itemCount){
                     newUris.add(it.getItemAt(index).uri)
                 }
-                viewModel.onImagesAdded(newUris)
+                viewModel.addImage(newUris)
             }
         }
         else {
@@ -164,10 +162,64 @@ class ImagesFragment: BaseFragment() {
         super.onTouchEvent(event)
     }
 
+    override fun onBackPressed(): Boolean {
+        return when{
+            mode != Normal -> {
+                setMode(Normal)
+                true
+            }
+            multi_fab.isExpanded() -> {
+                multi_fab.collapse()
+                true
+            }
+            else -> super.onBackPressed()
+        }
+    }
+
     override fun onPermissionGranted(permission: String) {
         super.onPermissionGranted(permission)
         when (permission) {
             WRITE_EXTERNAL_STORAGE -> startTakingPhoto()
+        }
+    }
+
+    private fun onMenuItemClicked(menuItem: MenuItem): Boolean {
+        when (menuItem.itemId) {
+            R.id.grid -> viewModel.changeGrid()
+            R.id.delete -> {
+                if (mode == Remove)
+                    viewModel.removeImages(imagesAdapter.getSelectedImages())
+                setMode(if (mode == Normal) Remove else Normal)
+            }
+        }
+        return true
+    }
+
+    private fun setMode(mode: Mode) {
+        this.mode = mode
+        val removeMenuItem = toolbar.menu.findItem(R.id.delete)
+        imagesAdapter.setMode(mode)
+        for (index in 0 until images.childCount) {
+            with (images.getChildViewHolder(images.getChildAt(index))) {
+                when (this) {
+                    is ImagesAdapter.ImageViewHolder -> this.setMode(mode)
+                }
+            }
+        }
+        when (mode) {
+            Normal -> {
+                removeMenuItem.icon = ActivityCompat.getDrawable(activity!!, R.drawable.ic_select_multiple)
+                multi_fab.show()
+            }
+            Remove -> {
+                with(ActivityCompat.getDrawable(
+                        activity!!,
+                        R.drawable.ic_delete_animated) as AnimatedVectorDrawable) {
+                    removeMenuItem.icon = this
+                    this.start()
+                }
+                multi_fab.hide()
+            }
         }
     }
 
@@ -189,8 +241,8 @@ class ImagesFragment: BaseFragment() {
         imagesAdapter.layoutParamsProvider?.viewMode = mode
         layoutManager.spanCount = mode.spanCount
         itemDecoration.viewMode = mode
-        history.adapter = imagesAdapter
-        history.layoutManager = layoutManager
+        images.adapter = imagesAdapter
+        images.layoutManager = layoutManager
         return true
     }
 
@@ -213,7 +265,7 @@ class ImagesFragment: BaseFragment() {
             }
             capturePhotoUri =
                     activity?.contentResolver?.insert(
-                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                            EXTERNAL_CONTENT_URI,
                             contentValues)
             Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { intent ->
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, capturePhotoUri)
@@ -231,20 +283,26 @@ class ImagesFragment: BaseFragment() {
             requestPermission(WRITE_EXTERNAL_STORAGE)
     }
 
-    private fun startPickingImage() {
-        val getIntent = Intent(Intent.ACTION_GET_CONTENT)
-        getIntent.type = INTENT_IMAGE_TYPE
-        getIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-
-        val pickIntent = Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        pickIntent.type = INTENT_IMAGE_TYPE
-        pickIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-
-        val chooserIntent = Intent.createChooser(getIntent, getString(R.string.image_chooser_title))
-        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(pickIntent))
-
-        startActivityForResult(chooserIntent, REQUEST_PICK_IMAGE)
+    private fun startPickingImageFromGallery() {
+        Intent(Intent.ACTION_PICK, EXTERNAL_CONTENT_URI).also{
+            it.type = INTENT_IMAGE_TYPE
+            it.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+            startActivityForResult(it, REQUEST_PICK_IMAGE)
+        }
     }
+
+    private fun startPickingImageFromFiles() {
+        Intent(Intent.ACTION_GET_CONTENT).also{
+            it.type = INTENT_IMAGE_TYPE
+            it.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+            startActivityForResult(it, REQUEST_PICK_IMAGE)
+        }
+    }
+}
+
+enum class Mode {
+    Normal,
+    Remove
 }
 
 private class SpacesItemDecoration(

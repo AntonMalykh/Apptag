@@ -9,7 +9,7 @@ import android.view.MotionEvent.ACTION_MOVE
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.core.content.res.ResourcesCompat
+import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.cleverapp.R
@@ -66,7 +66,7 @@ class TagsAdapter(val recyclerView: RecyclerView): BaseAdapter<ImageTag>() {
     }
 
     inner class LoadingViewHolder(parent: ViewGroup):
-            BaseViewHolder<Any>(
+            BaseViewHolder<ImageTag>(
                     parent,
                     R.layout.progress_view_holder)
 
@@ -151,15 +151,13 @@ class TagsAdapter(val recyclerView: RecyclerView): BaseAdapter<ImageTag>() {
             val resources = viewHolder.itemView.resources
             val colorTo = when (actionState) {
                 ItemTouchHelper.ACTION_STATE_DRAG ->
-                    ResourcesCompat.getColor(
-                            viewHolder.itemView.context.resources,
-                            R.color.colorAccent_transparent,
-                            null)
+                    ActivityCompat.getColor(
+                            viewHolder.itemView.context,
+                            R.color.colorAccent_transparent)
                 ItemTouchHelper.ACTION_STATE_SWIPE ->
-                    ResourcesCompat.getColor(
-                            viewHolder.itemView.context.resources,
-                            R.color.colorError_transparent,
-                            null)
+                    ActivityCompat.getColor(
+                            viewHolder.itemView.context,
+                            R.color.colorError_transparent)
                 else -> Color.TRANSPARENT
 
             }

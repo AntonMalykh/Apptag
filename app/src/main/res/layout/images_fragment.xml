@@ -32,13 +32,13 @@
             tools:text="Empty" />
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/history"
+            android:id="@+id/images"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="?android:colorBackground"
             android:clipToPadding="false"
             tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-            tools:listitem="@layout/history_view_holder"
+            tools:listitem="@layout/images_view_holder"
             tools:spanCount="3" />
 
     </FrameLayout>
