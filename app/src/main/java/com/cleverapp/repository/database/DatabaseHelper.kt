@@ -32,6 +32,11 @@ class DatabaseHelper(val database: AppDatabase){
         database.taggedImagesDao().deleteSavedImage(image)
     }
 
+    fun deleteSavedImage(imageId: String) {
+        database.taggedImagesDao().deleteImageTags(getTags(imageId))
+        database.taggedImagesDao().deleteSavedImage(getTaggedImage(imageId))
+    }
+
     fun getTaggedImage(imageId: String): TaggedImage {
         return database.taggedImagesDao().getTaggedImage(imageId)
                 .also {it.tags = getTags(it.id)}

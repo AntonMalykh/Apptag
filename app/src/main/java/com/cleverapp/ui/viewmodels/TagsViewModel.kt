@@ -94,9 +94,14 @@ class TagsViewModel(app: Application,
             }
     }
 
+    fun removeImage(){
+        imageId?.let { repository.removeImage(it) }
+    }
+
     fun getTagLanguage() = tagLanguage
 
     fun getTagCount() = tagCount
+
 
     private fun updateTagsOrdering(currentUiOrder: List<ImageTag>): List<ImageTag> {
         for (i in currentUiOrder.indices)

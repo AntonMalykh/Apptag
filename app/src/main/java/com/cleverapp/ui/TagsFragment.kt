@@ -1,9 +1,12 @@
 package com.cleverapp.ui
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
-import android.view.GestureDetector
+import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.GONE
@@ -18,9 +21,11 @@ import com.cleverapp.ui.navigation.NavigationDirections
 import com.cleverapp.ui.recyclerview.TagsAdapter
 import com.cleverapp.ui.viewmodels.TagsViewModel
 import com.cleverapp.utils.isVisibleAreaContains
+import com.cleverapp.utils.toPlainText
 import com.google.android.material.appbar.AppBarLayout
 import kotlinx.android.synthetic.main.tags_fragment.*
-class TagsFragment: BaseFragment() {
+
+class TagsFragment : BaseFragment() {
 
     companion object {
         private const val ARG_KEY_URI = "ARG_KEY_URI"
@@ -33,11 +38,11 @@ class TagsFragment: BaseFragment() {
 
         private fun newBundle(uri: Uri? = null, imageId: String? = null): Bundle {
             return Bundle().also { bundle ->
-                    when{
-                        uri != null -> bundle.putParcelable(ARG_KEY_URI, uri)
-                        imageId != null -> bundle.putString(ARG_KEY_IMAGE_ID, imageId)
-                    }
+                when {
+                    uri != null -> bundle.putParcelable(ARG_KEY_URI, uri)
+                    imageId != null -> bundle.putString(ARG_KEY_IMAGE_ID, imageId)
                 }
+            }
         }
 
         fun getArgsForNewImage(imageUri: Uri): Bundle {
@@ -72,68 +77,46 @@ class TagsFragment: BaseFragment() {
      */
     private var currentEditedTag: ImageTag? = null
 
-    private val onPreviewDoubleTapDetector =
-            with (
-                    object: GestureDetector.SimpleOnGestureListener(){
-                        override fun onDoubleTap(e: MotionEvent?): Boolean {
-                            return if (isNavigationAllowed() && viewModel.imageBytes.value != null) {
-                                navController.navigate(
-                                        NavigationDirections.toImagePreview(
-                                                this@TagsFragment.javaClass,
-                                                viewModel.imageBytes.value!!))
-                                true
-                            }
-                            else
-                                false
-                        }
-                    })
-            {
-                GestureDetector(activity, this).also { it.setOnDoubleTapListener(this) }
-            }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black)
         toolbar.setNavigationOnClickListener {
-            if (isNavigationAllowed())
+            if (isNavigationAllowed()) {
                 navController.popBackStack()
-        }
-        toolbar.inflateMenu(R.menu.menu_tags_fragment)
-        toolbar.setOnMenuItemClickListener {
-            when {
-                it.itemId == R.id.done -> {
-                    if (!isNavigationAllowed())
-                        return@setOnMenuItemClickListener false
-                    viewModel.saveImageTags(tagsAdapter.getItems())
-                    navController.popBackStack()
-                    true
-                }
-                else -> false
             }
         }
+        toolbar.inflateMenu(R.menu.menu_tags_fragment)
+        toolbar.setOnMenuItemClickListener(::onMenuItemClicked)
+        toolbar.menu.findItem(R.id.delete).isVisible = !TagsFragment.isNewImage(arguments!!)
+        toolbar.menu.findItem(R.id.download).isVisible = !TagsFragment.isNewImage(arguments!!)
 
         app_bar_layout.addOnOffsetChangedListener(
                 AppBarLayout.OnOffsetChangedListener { appbar, offset ->
-                    if (this@TagsFragment.view == null)
+                    if (this@TagsFragment.view == null) {
                         return@OnOffsetChangedListener
+                    }
                     // If toolbar expanded, it has blurry dark background.
                     // If collapsed - white. To display icons correctly, you need to
                     // change the color of the icons to opposite accordingly.
                     val ratio = Math.abs(offset.toFloat() / appbar.totalScrollRange)
                     val color = ColorUtils.blendARGB(Color.WHITE, Color.BLACK, ratio)
                     toolbar.menu.findItem(R.id.done).icon.setTint(color)
+                    toolbar.menu.findItem(R.id.copy_tags).icon.setTint(color)
+                    toolbar.menu.findItem(R.id.delete).icon.setTint(color)
+                    toolbar.menu.findItem(R.id.download).icon.setTint(color)
                     toolbar.navigationIcon?.setTint(color)
 
-                    multi_fab.scaleX = 1-ratio
-                    multi_fab.scaleY = 1-ratio
+                    multi_fab.scaleX = 1 - ratio
+                    multi_fab.scaleY = 1 - ratio
                     empty.translationY =
-                            (appbar.totalScrollRange - toolbar.height) * (1 + ratio/4)
+                            (appbar.totalScrollRange - toolbar.height) * (1 + ratio / 4)
                 })
 
         tagsAdapter = TagsAdapter(tags).also { adapter ->
             adapter.getIsEmptyLiveData().observeForever {
                 empty.visibility = if (it) VISIBLE else GONE
+                toolbar.menu.findItem(R.id.copy_tags).isVisible = !it
             }
             adapter.setOnEditTagClickedCallback { imageTag -> startEditTag(imageTag) }
         }
@@ -169,18 +152,28 @@ class TagsFragment: BaseFragment() {
             addOption(NEW_TAG_OPTION_ENTER, R.drawable.ic_add_white)
             addOption(NEW_TAG_OPTION_AI, R.drawable.ic_ai_recognition_white)
             setOnOptionsClickListener {
-                when(it) {
+                when (it) {
                     NEW_TAG_OPTION_ENTER -> startEditTag(ImageTag())
                     NEW_TAG_OPTION_AI -> startAddingTagsWithAi()
                 }
+            }
+        }
+
+        full_screen_preview.setOnClickListener {
+            if (isNavigationAllowed() && viewModel.imageBytes.value != null) {
+                navController.navigate(
+                        NavigationDirections.toImagePreview(
+                                this@TagsFragment.javaClass,
+                                viewModel.imageBytes.value!!))
             }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        if (isJustCreated())
+        if (isJustCreated()) {
             observeData()
+        }
     }
 
     override fun onBackPressed(): Boolean {
@@ -196,8 +189,9 @@ class TagsFragment: BaseFragment() {
     }
 
     override fun onTouchEvent(event: MotionEvent?) {
-        if (event != null && !multi_fab.isVisibleAreaContains(event.x.toInt(), event.y.toInt()))
+        if (event != null && !multi_fab.isVisibleAreaContains(event.x.toInt(), event.y.toInt())) {
             multi_fab.collapse()
+        }
         super.onTouchEvent(event)
     }
 
@@ -233,12 +227,49 @@ class TagsFragment: BaseFragment() {
         )
     }
 
+    private fun onMenuItemClicked(menuItem: MenuItem): Boolean {
+        return when (menuItem.itemId){
+            R.id.done -> {
+                if (!isNavigationAllowed())
+                    return false
+                viewModel.saveImageTags(tagsAdapter.getItems())
+                navController.popBackStack()
+                true
+            }
+            R.id.copy_tags -> {
+                (activity?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager)
+                        .primaryClip =
+                        ClipData.newPlainText("Image tags", tagsAdapter.getItems().toPlainText())
+                true
+            }
+            R.id.delete -> {
+                if (!isNavigationAllowed())
+                    return false
+                viewModel.removeImage()
+                navController.popBackStack()
+                true
+            }
+            R.id.download -> {
+                saveImageToStorage()
+                true
+            }
+            else -> false
+        }
+    }
+
+    private fun saveImageToStorage() {
+
+
+    }
+
+
     private fun finishEditTag(applyResult: Boolean) {
         currentEditedTag?.let {
             it.tag = edit_input.getInput()
             it.isCustom = true
-            if (applyResult)
+            if (applyResult) {
                 tagsAdapter.updateTag(it)
+            }
             currentEditedTag = null
         }
         edit_input.visibility = GONE

@@ -19,6 +19,8 @@ interface Repository {
 
     fun removeImage(image: TaggedImage)
 
+    fun removeImage(imageId: String)
+
     fun removeImages(images: Collection<TaggedImage>)
 
     fun updateImage(imageId: String, newTags: List<ImageTag>)

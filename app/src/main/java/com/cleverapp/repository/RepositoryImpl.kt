@@ -66,6 +66,11 @@ class RepositoryImpl(
         taggedImagesUpdated.value = true
     }
 
+    override fun removeImage(imageId: String) {
+        databaseHelper.deleteSavedImage(imageId)
+        taggedImagesUpdated.value = true
+    }
+
     override fun removeImages(images: Collection<TaggedImage>) {
         var any = false
         images.forEach{

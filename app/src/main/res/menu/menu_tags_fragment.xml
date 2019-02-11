@@ -3,9 +3,28 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+
+    <item
+        android:id="@+id/delete"
+        android:icon="@drawable/ic_delete"
+        android:title="@string/copy_tags"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/download"
+        android:icon="@drawable/ic_download_white"
+        android:title="@string/copy_tags"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/copy_tags"
+        android:icon="@drawable/ic_content_copy_white"
+        android:title="@string/copy_tags"
+        app:showAsAction="always" />
+
     <item
         android:id="@+id/done"
-        android:icon="@drawable/selector_apply"
+        android:icon="@drawable/ic_done_white"
         android:title="@string/done"
         app:showAsAction="always"/>
 

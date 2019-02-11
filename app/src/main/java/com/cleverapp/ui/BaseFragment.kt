@@ -96,6 +96,6 @@ abstract class BaseFragment : Fragment() {
     }
 
     protected fun isNavigationAllowed(): Boolean {
-        return navController.currentDestination?.id == myDestinationId ?: true
+        return navController.currentDestination?.id == myDestinationId
     }
 }

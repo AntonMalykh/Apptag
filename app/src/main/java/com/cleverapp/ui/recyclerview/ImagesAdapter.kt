@@ -137,7 +137,7 @@ class ImagesAdapter: BaseAdapter<TaggedImage>() {
                     .into(preview)
             tags.text = item.tags.toPlainText()
             menu.setOnClickListener { onMenuClicked() }
-            setMode(mod, selectedImages.contains(getItem()))
+            setMode(mode, false)
             itemView.setOnTouchListener{ _, event -> detector.onTouchEvent(event) }
         }
 

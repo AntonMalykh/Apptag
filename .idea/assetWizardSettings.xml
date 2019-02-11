@@ -151,7 +151,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="jar:file:/C:/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/navigation/ic_close_black_24dp.xml" />
+                                      <entry key="url" value="jar:file:/C:/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/file/ic_file_download_black_24dp.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -161,9 +161,8 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="assetSourceType" value="FILE" />
                             <entry key="color" value="ffffff" />
-                            <entry key="outputName" value="ic_outline_expand_image_white" />
+                            <entry key="outputName" value="ic_file_download_black_24dp" />
                             <entry key="sourceFile" value="C:\Users\malyk\Downloads\Dev\Icons\outline-crop_free-24px.svg" />
                           </map>
                         </option>
