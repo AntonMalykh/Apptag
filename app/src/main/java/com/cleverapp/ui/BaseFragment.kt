@@ -19,13 +19,15 @@ abstract class BaseFragment : Fragment() {
 
     abstract val viewId: Int
 
+    /**
+     * Use only when {@link Activity#onCreate} is already passed through
+     */
     protected val navController: NavController
         get() {
             return NavHostFragment.findNavController(this)
         }
 
     private var myDestinationId: Int = 0
-    private var isJustCreated: Boolean = true
     private val globalLayoutListener: ViewTreeObserver.OnGlobalLayoutListener =
             object : ViewTreeObserver.OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
@@ -36,12 +38,6 @@ abstract class BaseFragment : Fragment() {
                 }
             }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        myDestinationId = navController.currentDestination?.id ?: 0
-        isJustCreated = savedInstanceState == null
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         super.onCreateView(inflater, container, savedInstanceState)
         val view = inflater.inflate(viewId, container, false)
@@ -49,9 +45,10 @@ abstract class BaseFragment : Fragment() {
         return view
     }
 
-    override fun onPause() {
-        super.onPause()
-        isJustCreated = false
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        // see navController description
+        myDestinationId = navController.currentDestination?.id ?: 0
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -89,10 +86,6 @@ abstract class BaseFragment : Fragment() {
                         ViewModelFactory(it.application, arguments)).get(viewModelClass)
             } ?: throw IllegalStateException("Invalid activity (null)")
         }
-    }
-
-    protected fun isJustCreated(): Boolean {
-        return isJustCreated
     }
 
     protected fun isNavigationAllowed(): Boolean {

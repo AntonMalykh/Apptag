@@ -124,8 +124,6 @@ class ImagesFragment: BaseFragment() {
         images.adapter = imagesAdapter
         images.layoutManager = layoutManager
         observeViewModel()
-        if (isJustCreated())
-            viewModel.updateHistory()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

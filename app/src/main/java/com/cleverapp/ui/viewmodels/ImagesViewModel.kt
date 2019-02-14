@@ -14,7 +14,7 @@ class ImagesViewModel(app: Application): BaseViewModel(app) {
 
     private val imagesChangedObserver: Observer<Boolean> = Observer {
         if (it == true)
-            updateHistory()
+            request.value = true
     }
     private val request = MutableLiveData<Boolean>()
     private val images = Transformations.switchMap(request) {
@@ -24,6 +24,7 @@ class ImagesViewModel(app: Application): BaseViewModel(app) {
 
     init {
         repository.getImagesChangedLiveData().observeForever(imagesChangedObserver)
+        request.value = true
     }
 
     override fun onCleared() {
@@ -33,10 +34,6 @@ class ImagesViewModel(app: Application): BaseViewModel(app) {
 
     fun getImagesLiveData(): LiveData<List<TaggedImage>> = images
     fun getViewModeLiveData(): LiveData<HistoryViewMode> = viewMode
-
-    fun updateHistory(){
-        request.value = true
-    }
 
     fun removeImage(image: TaggedImage) {
         repository.removeImage(image)

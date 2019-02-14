@@ -167,13 +167,8 @@ class TagsFragment : BaseFragment() {
                                 viewModel.imageBytes.value!!))
             }
         }
-    }
 
-    override fun onResume() {
-        super.onResume()
-        if (isJustCreated()) {
-            observeData()
-        }
+        observeData()
     }
 
     override fun onBackPressed(): Boolean {
