@@ -33,4 +33,6 @@ interface Repository {
             : LiveData<TagsLoadingResult>
 
     fun makeImageBytes(uri: Uri): ByteArray
+
+    fun removeFromStorage(imageUri: Uri)
 }

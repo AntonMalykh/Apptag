@@ -1,10 +1,11 @@
-package com.cleverapp.ui
+package com.cleverapp.ui.use_cases.image_preview
 
 import android.os.Bundle
 import android.view.View
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.cleverapp.R
+import com.cleverapp.ui.BaseFragment
 import kotlinx.android.synthetic.main.image_preview_fragment.*
 
 class ImagePreviewFragment : BaseFragment() {

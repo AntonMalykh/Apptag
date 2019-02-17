@@ -9,4 +9,5 @@
     <string name="empty">Empty</string>
     <string name="add">Add</string>
     <string name="done">Done</string>
+    <string name="image_saved">Image has been saved</string>
 </resources>

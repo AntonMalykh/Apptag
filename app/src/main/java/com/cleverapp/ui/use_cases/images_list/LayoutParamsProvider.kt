@@ -1,7 +1,6 @@
-package com.cleverapp.ui.recyclerview
+package com.cleverapp.ui.use_cases.images_list
 
 import android.view.ViewGroup
-import com.cleverapp.ui.viewmodels.HistoryViewMode
 
 class LayoutParamsProvider(
         private val windowWidth: Int,

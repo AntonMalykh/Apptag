@@ -5,11 +5,11 @@ import android.os.Bundle
 import androidx.navigation.NavDirections
 import com.cleverapp.R
 import com.cleverapp.ui.BaseFragment
-import com.cleverapp.ui.ImagePreviewFragment
-import com.cleverapp.ui.ImagesFragment
-import com.cleverapp.ui.TagsFragment
-import com.cleverapp.ui.TagsFragment.Companion.getArgsForNewImage
-import com.cleverapp.ui.TagsFragment.Companion.getArgsForSavedImage
+import com.cleverapp.ui.use_cases.image_preview.ImagePreviewFragment
+import com.cleverapp.ui.use_cases.image_tags.TagsFragment
+import com.cleverapp.ui.use_cases.image_tags.TagsFragment.Companion.getArgsForNewImage
+import com.cleverapp.ui.use_cases.image_tags.TagsFragment.Companion.getArgsForSavedImage
+import com.cleverapp.ui.use_cases.images_list.ImagesFragment
 
 class NavigationDirections{
 
@@ -21,9 +21,9 @@ class NavigationDirections{
             override fun getActionId() = R.id.navigate_images_to_tags
         }
 
-        fun historyToEditNewImage(imageUri: Uri) = object: NavDirections {
+        fun historyToEditNewImage(imageUri: Uri, isNewPhoto: Boolean) = object: NavDirections {
 
-            override fun getArguments() = getArgsForNewImage(imageUri)
+            override fun getArguments() = getArgsForNewImage(imageUri, isNewPhoto)
 
             override fun getActionId() = R.id.navigate_images_to_tags
         }

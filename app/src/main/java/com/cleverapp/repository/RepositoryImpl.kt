@@ -126,4 +126,8 @@ class RepositoryImpl(
         }
         return ByteArray(0)
     }
+
+    override fun removeFromStorage(imageUri: Uri) {
+        contentResolver.delete(imageUri, null, null)
+    }
 }

@@ -1,4 +1,4 @@
-package com.cleverapp.ui
+package com.cleverapp.ui.use_cases.images_list
 
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.app.Activity.RESULT_OK
@@ -20,14 +20,10 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cleverapp.R
 import com.cleverapp.repository.data.TaggedImage
-import com.cleverapp.ui.Mode.Normal
-import com.cleverapp.ui.Mode.Remove
+import com.cleverapp.ui.BaseFragment
 import com.cleverapp.ui.navigation.NavigationDirections
-import com.cleverapp.ui.recyclerview.ImagesAdapter
-import com.cleverapp.ui.recyclerview.LayoutParamsProvider
-import com.cleverapp.ui.recyclerview.OnImageMenuClickListener
-import com.cleverapp.ui.viewmodels.HistoryViewMode
-import com.cleverapp.ui.viewmodels.ImagesViewModel
+import com.cleverapp.ui.use_cases.images_list.Mode.Normal
+import com.cleverapp.ui.use_cases.images_list.Mode.Remove
 import com.cleverapp.utils.INTENT_IMAGE_TYPE
 import com.cleverapp.utils.isVisibleAreaContains
 import com.cleverapp.utils.toPlainText
@@ -60,7 +56,7 @@ class ImagesFragment: BaseFragment() {
     private var capturePhotoUri: Uri? = null
     private var mode = Normal
 
-    private var onMenuClickListener = object: OnImageMenuClickListener{
+    private var onMenuClickListener = object: OnImageMenuClickListener {
         override fun onRemoveClicked(image: TaggedImage) {
             viewModel.removeImage(image)
         }
@@ -112,6 +108,11 @@ class ImagesFragment: BaseFragment() {
         }
     }
 
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        observeViewModel()
+    }
+
     override fun onPause() {
         super.onPause()
         viewModel.updateImageOrdering(imagesAdapter.getItems())
@@ -123,15 +124,16 @@ class ImagesFragment: BaseFragment() {
                 view?.width?.let { LayoutParamsProvider(it, viewModel.getViewModeLiveData().value!!) }
         images.adapter = imagesAdapter
         images.layoutManager = layoutManager
-        observeViewModel()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (!isExpectedResult(requestCode) || resultCode != RESULT_OK)
+        if (!isExpectedResult(requestCode) || resultCode != RESULT_OK) {
+            capturePhotoUri = null
             return
+        }
 
-        val isMultipleImages = data?.clipData?.itemCount != null
+        val isMultipleImages = data?.clipData?.let { it.itemCount > 1 } ?: false
 
         if (isMultipleImages) {
             data?.clipData?.let {
@@ -145,10 +147,11 @@ class ImagesFragment: BaseFragment() {
             }
         }
         else {
-            val location: Uri? = if (requestCode == REQUEST_TAKE_PHOTO) capturePhotoUri else data?.data
+            val isPhoto = requestCode == REQUEST_TAKE_PHOTO
+            val location: Uri? = if (isPhoto) capturePhotoUri else data?.data
             location?.let {
                 if (isNavigationAllowed())
-                    navController.navigate(NavigationDirections.historyToEditNewImage(it))
+                    navController.navigate(NavigationDirections.historyToEditNewImage(it, isPhoto))
             }
         }
         capturePhotoUri = null

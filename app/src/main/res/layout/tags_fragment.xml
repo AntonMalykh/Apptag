@@ -91,13 +91,13 @@
         app:layout_anchor="@id/app_bar_layout"
         app:layout_anchorGravity="center|bottom" />
 
-    <com.cleverapp.ui.view.EditTagView
+    <com.cleverapp.ui.use_cases.image_tags.view.EditTagView
         android:id="@+id/edit_input"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone" />
 
-    <com.cleverapp.ui.view.AiOptionsView
+    <com.cleverapp.ui.use_cases.image_tags.view.AiOptionsView
         android:id="@+id/ai_options"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

@@ -1,4 +1,4 @@
-package com.cleverapp.ui.viewmodels
+package com.cleverapp.ui.use_cases.images_list
 
 import android.app.Application
 import android.net.Uri
@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.Transformations
 import com.cleverapp.repository.data.TaggedImage
+import com.cleverapp.ui.viewmodels.BaseViewModel
 
 private const val PREFERENCE_KEY_SPAN_COUNT = "PREFERENCE_KEY_SPAN_COUNT"
 

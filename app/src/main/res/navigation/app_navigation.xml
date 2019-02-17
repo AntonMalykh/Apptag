@@ -8,7 +8,7 @@
 
     <fragment
         android:id="@+id/imagesFragment"
-        android:name="com.cleverapp.ui.ImagesFragment"
+        android:name="com.cleverapp.ui.use_cases.images_list.ImagesFragment"
         android:label="ImagesFragment"
         tools:layout="@layout/images_fragment">
         <action
@@ -24,7 +24,7 @@
 
     <fragment
         android:id="@+id/tagsFragment"
-        android:name="com.cleverapp.ui.TagsFragment"
+        android:name="com.cleverapp.ui.use_cases.image_tags.TagsFragment"
         android:label="EditTagsFragment"
         tools:layout="@layout/tags_fragment">
         <action
@@ -34,7 +34,7 @@
 
     <fragment
         android:id="@+id/imagePreviewFragment"
-        android:name="com.cleverapp.ui.ImagePreviewFragment"
+        android:name="com.cleverapp.ui.use_cases.image_preview.ImagePreviewFragment"
         android:label="ImagePreviewFragment"
         tools:layout="@layout/image_preview_fragment"/>
 </navigation>

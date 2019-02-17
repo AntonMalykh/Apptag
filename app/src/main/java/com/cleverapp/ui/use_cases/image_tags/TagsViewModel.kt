@@ -1,14 +1,18 @@
-package com.cleverapp.ui.viewmodels
+package com.cleverapp.ui.use_cases.image_tags
 
 import android.app.Application
+import android.media.MediaScannerConnection
 import android.os.Bundle
+import android.os.Environment
 import android.text.TextUtils
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import com.cleverapp.repository.Language
 import com.cleverapp.repository.data.ImageTag
-import com.cleverapp.ui.TagsFragment
+import com.cleverapp.ui.viewmodels.BaseViewModel
+import java.io.File
+import java.io.FileOutputStream
 
 
 private const val PREFERENCE_KEY_TAG_LANGUAGE = "PREFERENCE_KEY_TAG_LANGUAGE"
@@ -65,6 +69,8 @@ class TagsViewModel(app: Application,
             TagsFragment.isNewImage(tagsArguments) ->
                 TagsFragment.extractImageUri(tagsArguments)?.let { imageUri ->
                     imageBytes.value = repository.makeImageBytes(imageUri)
+                    if (TagsFragment.isNewPhoto(tagsArguments))
+                        repository.removeFromStorage(imageUri)
                 }
             else ->
                 TagsFragment.extractImageId(tagsArguments)?.let { imageId ->
@@ -96,6 +102,38 @@ class TagsViewModel(app: Application,
 
     fun removeImage(){
         imageId?.let { repository.removeImage(it) }
+    }
+
+    fun saveImageToStorage(): Boolean {
+        var isSaved = false
+        val picturesFile = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+        if (!picturesFile.exists())
+            picturesFile.mkdir()
+        File(picturesFile, "/Apptag").also {folder ->
+            if (!folder.exists())
+                folder.mkdir()
+            File(folder, "Apptag + ${System.currentTimeMillis()}.jpeg").also {file ->
+                if (file.exists())
+                    file.delete()
+                try {
+                    FileOutputStream(file).use {
+                        it.write(imageBytes.value)
+                        isSaved = true
+                    }
+                }
+                catch (ex: Exception) {
+
+                }
+                if (isSaved) {
+                    MediaScannerConnection.scanFile(
+                            getApplication(),
+                            arrayOf(file.absolutePath),
+                            null,
+                            null)
+                }
+            }
+        }
+        return isSaved
     }
 
     fun getTagLanguage() = tagLanguage

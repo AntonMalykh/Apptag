@@ -1,5 +1,6 @@
-package com.cleverapp.ui
+package com.cleverapp.ui.use_cases.image_tags
 
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -11,15 +12,15 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.widget.Toast
 import androidx.core.graphics.ColorUtils
 import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.cleverapp.R
 import com.cleverapp.repository.data.ImageTag
+import com.cleverapp.ui.BaseFragment
 import com.cleverapp.ui.navigation.NavigationDirections
-import com.cleverapp.ui.recyclerview.TagsAdapter
-import com.cleverapp.ui.viewmodels.TagsViewModel
 import com.cleverapp.utils.isVisibleAreaContains
 import com.cleverapp.utils.toPlainText
 import com.google.android.material.appbar.AppBarLayout
@@ -29,6 +30,7 @@ class TagsFragment : BaseFragment() {
 
     companion object {
         private const val ARG_KEY_URI = "ARG_KEY_URI"
+        private const val ARG_KEY_IS_NEW_PHOTO = "ARG_KEY_IS_NEW_PHOTO"
         private const val ARG_KEY_IMAGE_ID = "ARG_KEY_IMAGE_ID"
 
         private const val NEW_TAG_OPTION_ENTER = 0
@@ -36,17 +38,19 @@ class TagsFragment : BaseFragment() {
 
         private const val IMAGE_EXPAND_DELAY = 300L
 
-        private fun newBundle(uri: Uri? = null, imageId: String? = null): Bundle {
+        private fun newBundle(uri: Uri? = null, isNewPhotoUri: Boolean? = null, imageId: String? = null): Bundle {
             return Bundle().also { bundle ->
-                when {
-                    uri != null -> bundle.putParcelable(ARG_KEY_URI, uri)
-                    imageId != null -> bundle.putString(ARG_KEY_IMAGE_ID, imageId)
-                }
+                if (uri != null)
+                    bundle.putParcelable(ARG_KEY_URI, uri)
+                if (isNewPhotoUri != null)
+                    bundle.putBoolean(ARG_KEY_IS_NEW_PHOTO, isNewPhotoUri)
+                if (imageId != null)
+                    bundle.putString(ARG_KEY_IMAGE_ID, imageId)
             }
         }
 
-        fun getArgsForNewImage(imageUri: Uri): Bundle {
-            return newBundle(uri = imageUri)
+        fun getArgsForNewImage(imageUri: Uri, isNewPhoto: Boolean): Bundle {
+            return newBundle(imageUri, isNewPhoto)
         }
 
         fun getArgsForSavedImage(imageId: String): Bundle {
@@ -63,6 +67,10 @@ class TagsFragment : BaseFragment() {
 
         fun isNewImage(args: Bundle): Boolean {
             return args.containsKey(ARG_KEY_URI)
+        }
+
+        fun isNewPhoto(args: Bundle): Boolean {
+            return args.getBoolean(ARG_KEY_IS_NEW_PHOTO, false)
         }
     }
 
@@ -88,8 +96,7 @@ class TagsFragment : BaseFragment() {
         }
         toolbar.inflateMenu(R.menu.menu_tags_fragment)
         toolbar.setOnMenuItemClickListener(::onMenuItemClicked)
-        toolbar.menu.findItem(R.id.delete).isVisible = !TagsFragment.isNewImage(arguments!!)
-        toolbar.menu.findItem(R.id.download).isVisible = !TagsFragment.isNewImage(arguments!!)
+        toolbar.menu.findItem(R.id.delete).isVisible = !isNewImage(arguments!!)
 
         app_bar_layout.addOnOffsetChangedListener(
                 AppBarLayout.OnOffsetChangedListener { appbar, offset ->
@@ -167,8 +174,11 @@ class TagsFragment : BaseFragment() {
                                 viewModel.imageBytes.value!!))
             }
         }
+    }
 
-        observeData()
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        observeViewModel()
     }
 
     override fun onBackPressed(): Boolean {
@@ -190,7 +200,14 @@ class TagsFragment : BaseFragment() {
         super.onTouchEvent(event)
     }
 
-    private fun observeData() {
+    override fun onPermissionGranted(permission: String) {
+        super.onPermissionGranted(permission)
+        when (permission) {
+            WRITE_EXTERNAL_STORAGE -> saveImageToStorage()
+        }
+    }
+
+    private fun observeViewModel() {
         viewModel.imageBytes.observe(
                 this,
                 Observer {
@@ -201,6 +218,7 @@ class TagsFragment : BaseFragment() {
                     app_bar_layout.postDelayed(
                             { app_bar_layout?.setExpanded(true, true) },
                             IMAGE_EXPAND_DELAY)
+                    toolbar.menu.findItem(R.id.download).isVisible = !isNewImage(arguments!!)
                 }
         )
 
@@ -253,10 +271,13 @@ class TagsFragment : BaseFragment() {
     }
 
     private fun saveImageToStorage() {
-
-
+        if (!hasPermission(WRITE_EXTERNAL_STORAGE)) {
+            requestPermission(WRITE_EXTERNAL_STORAGE)
+            return
+        }
+        if (viewModel.saveImageToStorage())
+            Toast.makeText(activity, R.string.image_saved, Toast.LENGTH_SHORT).show()
     }
-
 
     private fun finishEditTag(applyResult: Boolean) {
         currentEditedTag?.let {

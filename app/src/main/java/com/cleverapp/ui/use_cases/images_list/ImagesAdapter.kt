@@ -1,4 +1,4 @@
-package com.cleverapp.ui.recyclerview
+package com.cleverapp.ui.use_cases.images_list
 
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -18,7 +18,8 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.request.RequestOptions
 import com.cleverapp.R
 import com.cleverapp.repository.data.TaggedImage
-import com.cleverapp.ui.Mode
+import com.cleverapp.ui.view.recyclerview.BaseAdapter
+import com.cleverapp.ui.view.recyclerview.BaseViewHolder
 import com.cleverapp.utils.toPlainText
 import java.util.*
 

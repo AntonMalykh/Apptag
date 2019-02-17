@@ -1,4 +1,4 @@
-package com.cleverapp.ui.recyclerview
+package com.cleverapp.ui.view.recyclerview
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

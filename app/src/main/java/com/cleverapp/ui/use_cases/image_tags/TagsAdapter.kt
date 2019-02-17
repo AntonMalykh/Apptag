@@ -1,4 +1,4 @@
-package com.cleverapp.ui.recyclerview
+package com.cleverapp.ui.use_cases.image_tags
 
 import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
@@ -14,6 +14,8 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.cleverapp.R
 import com.cleverapp.repository.data.ImageTag
+import com.cleverapp.ui.view.recyclerview.BaseAdapter
+import com.cleverapp.ui.view.recyclerview.BaseViewHolder
 import java.util.*
 
 private const val VIEW_TYPE_TAG = 0

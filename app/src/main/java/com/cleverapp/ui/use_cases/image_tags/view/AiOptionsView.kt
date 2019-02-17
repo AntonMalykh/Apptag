@@ -1,4 +1,4 @@
-package com.cleverapp.ui.view
+package com.cleverapp.ui.use_cases.image_tags.view
 
 import android.content.Context
 import android.util.AttributeSet
