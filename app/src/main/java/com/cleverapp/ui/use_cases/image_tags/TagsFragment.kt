@@ -141,8 +141,7 @@ class TagsFragment : BaseFragment() {
 
         edit_input.apply {
             visibility = GONE
-            setOnOkClickedListener { finishEditTag(true) }
-            setOnEmptySpaceClickListener { finishEditTag(false) }
+            setOnSaveClickedListener { finishEditTag(true) }
         }
 
         ai_options.apply {
@@ -152,7 +151,6 @@ class TagsFragment : BaseFragment() {
                 visibility = GONE
                 viewModel.loadTags(language, count)
             }
-            setOnEmptySpaceClickListener { visibility = GONE }
         }
 
         multi_fab.apply {
@@ -253,6 +251,7 @@ class TagsFragment : BaseFragment() {
                 (activity?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager)
                         .primaryClip =
                         ClipData.newPlainText("Image tags", tagsAdapter.getItems().toPlainText())
+                Toast.makeText(activity, R.string.tags_were_copied_message, Toast.LENGTH_SHORT).show()
                 true
             }
             R.id.delete -> {

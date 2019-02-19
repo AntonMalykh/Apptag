@@ -1,27 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="horizontal"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background_transparent"
-    android:gravity="center">
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center"
+    android:orientation="horizontal">
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/input"
+        style="@style/Widget.AppCompat.EditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:theme="@style/Widget.MaterialComponents.TextInputEditText.OutlinedBox"
+        android:layout_marginStart="@dimen/offset_small"
+        android:backgroundTint="?attr/colorAccent"
         android:gravity="center"
-        android:minWidth="100dp"/>
+        android:minWidth="@dimen/tag_input_min_width"
+        app:layout_constraintBaseline_toBaselineOf="@+id/save_tag"
+        app:layout_constraintEnd_toStartOf="@+id/save_tag"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constrainedWidth="true"
+        tools:text="@tools:sample/cities" />
 
-    <androidx.appcompat.widget.AppCompatImageButton
-        android:id="@+id/ok"
-        android:layout_width="@dimen/button_height_default"
-        android:layout_height="@dimen/button_height_default"
-        android:background="?android:selectableItemBackground"
-        android:theme="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        app:srcCompat="@drawable/ic_check"
-        android:scaleType="centerInside"/>
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/save_tag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/offset_small"
+        android:layout_marginEnd="@dimen/offset_small"
+        android:background="@drawable/text_button"
+        android:gravity="center"
+        android:text="@string/save"
+        android:textAllCaps="false"
+        android:textColor="?attr/colorAccent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/input"
+        app:layout_constraintTop_toTopOf="parent" />
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

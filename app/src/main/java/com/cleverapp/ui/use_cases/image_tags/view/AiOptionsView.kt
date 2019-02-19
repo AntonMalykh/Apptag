@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.LayoutInflater
-import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.widget.PopupMenu
 import com.cleverapp.R
@@ -57,14 +56,10 @@ class AiOptionsView @JvmOverloads constructor(
 
         option_language.setOnClickListener { languageMenu.show() }
         option_count.setOnClickListener { countMenu.show() }
-        apply.setOnClickListener { onApplyClickListener?.invoke() }
+        find_tags.setOnClickListener { onApplyClickListener?.invoke() }
     }
 
     fun setOnApplyClickListener(listener: () -> Unit){
         onApplyClickListener = listener
-    }
-
-    fun setOnEmptySpaceClickListener(listener: (View) -> Unit) {
-        setOnClickListener(listener)
     }
 }

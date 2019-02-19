@@ -9,5 +9,7 @@
     <string name="empty">Empty</string>
     <string name="add">Add</string>
     <string name="done">Done</string>
-    <string name="image_saved">Image has been saved</string>
+    <string name="image_saved">Image was saved to storage</string>
+    <string name="tags_were_copied_message">Tags were copied to clipboard</string>
+    <string name="find_tags">Find tags</string>
 </resources>
