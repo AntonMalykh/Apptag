@@ -18,8 +18,7 @@ class ImagePreviewFragment : BaseFragment() {
         }
     }
 
-    override val viewId: Int
-        get() = R.layout.image_preview_fragment
+    override val viewId = R.layout.image_preview_fragment
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

@@ -17,13 +17,13 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.request.RequestOptions
 import com.cleverapp.R
-import com.cleverapp.repository.data.TaggedImage
+import com.cleverapp.repository.data.Image
 import com.cleverapp.ui.view.recyclerview.BaseAdapter
 import com.cleverapp.ui.view.recyclerview.BaseViewHolder
 import com.cleverapp.utils.toPlainText
 import java.util.*
 
-class ImagesAdapter: BaseAdapter<TaggedImage>() {
+class ImagesAdapter: BaseAdapter<Image>() {
 
     private companion object {
         const val ITEM_SELECTED_SCALE = 0.8f
@@ -32,11 +32,11 @@ class ImagesAdapter: BaseAdapter<TaggedImage>() {
 
     var layoutParamsProvider: LayoutParamsProvider? = null
 
-    private var onImageClickListener: ((TaggedImage) -> Unit)? = null
-    private var onImageDoubleClickListener: ((TaggedImage) -> Unit)? = null
+    private var onImageClickListener: ((Image) -> Unit)? = null
+    private var onImageDoubleClickListener: ((Image) -> Unit)? = null
     private var onMenuClickListener: OnImageMenuClickListener? = null
     private var mode = Mode.Normal
-    private val selectedImages = mutableListOf<TaggedImage>()
+    private val selectedImages = mutableListOf<Image>()
 
     override val itemTouchHelper = ItemTouchHelper(
             object: ItemTouchHelper.Callback(){
@@ -63,7 +63,7 @@ class ImagesAdapter: BaseAdapter<TaggedImage>() {
                 }
     })
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder<TaggedImage> {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder<Image> {
         val holder = ImageViewHolder(parent)
         layoutParamsProvider?.let {
             holder.itemView.layoutParams = it.getLayoutParams()
@@ -71,7 +71,7 @@ class ImagesAdapter: BaseAdapter<TaggedImage>() {
         return holder
     }
 
-    override fun onViewAttachedToWindow(holder: BaseViewHolder<TaggedImage>) {
+    override fun onViewAttachedToWindow(holder: BaseViewHolder<Image>) {
         super.onViewAttachedToWindow(holder)
         if (holder is ImageViewHolder && holder.mod != mode) {
             holder.setMode(mode)
@@ -82,11 +82,11 @@ class ImagesAdapter: BaseAdapter<TaggedImage>() {
         this.onMenuClickListener = onMenuClickListener
     }
 
-    fun setOnImageClickListener(listener: (TaggedImage) -> Unit) {
+    fun setOnImageClickListener(listener: (Image) -> Unit) {
         this.onImageClickListener = listener
     }
 
-    fun setOnImageDoubleClickListener(listener: (TaggedImage) -> Unit) {
+    fun setOnImageDoubleClickListener(listener: (Image) -> Unit) {
         this.onImageDoubleClickListener = listener
     }
 
@@ -96,12 +96,12 @@ class ImagesAdapter: BaseAdapter<TaggedImage>() {
             selectedImages.clear()
     }
 
-    fun getSelectedImages(): List<TaggedImage> {
+    fun getSelectedImages(): List<Image> {
         return selectedImages
     }
 
     inner class ImageViewHolder(parent: ViewGroup):
-            BaseViewHolder<TaggedImage>(
+            BaseViewHolder<Image>(
                     parent, R.layout.images_view_holder) {
 
         internal var mod: Mode = Mode.Normal
@@ -129,7 +129,7 @@ class ImagesAdapter: BaseAdapter<TaggedImage>() {
             setOnDoubleTapListener(tapListener)
         }
 
-        override fun bindItem(item: TaggedImage) {
+        override fun bindItem(item: Image) {
             super.bindItem(item)
             Glide.with(preview)
                     .load(item.previewBytes)
@@ -206,6 +206,6 @@ class ImagesAdapter: BaseAdapter<TaggedImage>() {
 }
 
 interface OnImageMenuClickListener {
-    fun onRemoveClicked(image: TaggedImage)
-    fun onCopyClicked(image: TaggedImage)
+    fun onRemoveClicked(image: Image)
+    fun onCopyClicked(image: Image)
 }

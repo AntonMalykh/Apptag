@@ -146,10 +146,10 @@ class TagsFragment : BaseFragment() {
 
         ai_options.apply {
             language = viewModel.getTagLanguage()
-            count = viewModel.getTagCount()
+            amount = viewModel.getTagCount()
             setOnApplyClickListener {
                 visibility = GONE
-                viewModel.loadTags(language, count)
+                viewModel.loadTags(language, amount)
             }
         }
 
@@ -291,9 +291,9 @@ class TagsFragment : BaseFragment() {
         edit_input.setText("")
     }
 
-    private fun startEditTag(imageTag: ImageTag) {
-        currentEditedTag = imageTag
-        edit_input.setText(imageTag.tag)
+    private fun startEditTag(tag: ImageTag) {
+        currentEditedTag = tag
+        edit_input.setText(tag.tag)
         edit_input.visibility = VISIBLE
         edit_input.bringToFront()
     }

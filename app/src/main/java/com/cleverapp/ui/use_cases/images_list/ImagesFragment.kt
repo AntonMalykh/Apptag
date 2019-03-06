@@ -3,7 +3,6 @@ package com.cleverapp.ui.use_cases.images_list
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.app.Activity.RESULT_OK
 import android.content.*
-import android.graphics.Rect
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.net.Uri
 import android.os.Bundle
@@ -17,9 +16,9 @@ import android.view.View.VISIBLE
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import com.cleverapp.R
-import com.cleverapp.repository.data.TaggedImage
+import com.cleverapp.repository.data.Image
 import com.cleverapp.ui.BaseFragment
 import com.cleverapp.ui.navigation.NavigationDirections
 import com.cleverapp.ui.use_cases.images_list.Mode.Normal
@@ -57,11 +56,11 @@ class ImagesFragment: BaseFragment() {
     private var mode = Normal
 
     private var onMenuClickListener = object: OnImageMenuClickListener {
-        override fun onRemoveClicked(image: TaggedImage) {
+        override fun onRemoveClicked(image: Image) {
             viewModel.removeImage(image)
         }
 
-        override fun onCopyClicked(image: TaggedImage) {
+        override fun onCopyClicked(image: Image) {
             (activity?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager)
                     .primaryClip =
                     ClipData.newPlainText("Image tags", image.tags.toPlainText())
@@ -214,11 +213,11 @@ class ImagesFragment: BaseFragment() {
                 multi_fab.show()
             }
             Remove -> {
-                with(ActivityCompat.getDrawable(
+                with(AnimatedVectorDrawableCompat.create(
                         activity!!,
-                        R.drawable.ic_delete_animated) as AnimatedVectorDrawable) {
+                        R.drawable.ic_delete_animated)) {
                     removeMenuItem.icon = this
-                    this.start()
+                    this?.start()
                 }
                 multi_fab.hide()
             }
@@ -229,14 +228,14 @@ class ImagesFragment: BaseFragment() {
         return requestCode == REQUEST_TAKE_PHOTO || requestCode == REQUEST_PICK_IMAGE
     }
 
-    private fun onImageClicked(taggedImage: TaggedImage) {
+    private fun onImageClicked(image: Image) {
         if (isNavigationAllowed())
-            navController.navigate(NavigationDirections.historyToEditSavedImage(taggedImage.id))
+            navController.navigate(NavigationDirections.historyToEditSavedImage(image.id))
     }
 
-    private fun onImageDoubleClicked(taggedImage: TaggedImage) {
+    private fun onImageDoubleClicked(image: Image) {
         if (isNavigationAllowed())
-            navController.navigate(NavigationDirections.toImagePreview(this.javaClass, taggedImage.previewBytes))
+            navController.navigate(NavigationDirections.toImagePreview(this.javaClass, image.previewBytes))
     }
 
     private fun applyViewMode(mode: HistoryViewMode): Boolean {
@@ -311,33 +310,3 @@ enum class Mode {
     Normal,
     Remove
 }
-
-private class SpacesItemDecoration(
-        private val space: Int,
-        var viewMode: HistoryViewMode)
-    : RecyclerView.ItemDecoration() {
-
-    override fun getItemOffsets(outRect: Rect,
-                                view: View,
-                                parent: RecyclerView,
-                                state: RecyclerView.State) {
-
-        outRect.bottom = space
-        if (viewMode == HistoryViewMode.SingleColumn)
-            return
-        val position = parent.getChildAdapterPosition(view)
-        val positionCenter = position - 1
-        if (positionCenter == 0 || positionCenter % viewMode.spanCount == 0){
-            outRect.left = space / 2
-            outRect.right = space / 2
-        }
-        else if (position == 0 || position % viewMode.spanCount == 0){
-            outRect.right = space / 2
-        }
-        else {
-            outRect.left = space
-            outRect.right = -space
-        }
-    }
-}
-

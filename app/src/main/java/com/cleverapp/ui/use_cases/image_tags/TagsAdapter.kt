@@ -20,6 +20,7 @@ import java.util.*
 
 private const val VIEW_TYPE_TAG = 0
 private const val VIEW_TYPE_LOADING = 1
+// TODO should be replaced by entries
 private val ITEM_LOADING = ImageTag("", "", false, 0)
 
 class TagsAdapter(val recyclerView: RecyclerView): BaseAdapter<ImageTag>() {

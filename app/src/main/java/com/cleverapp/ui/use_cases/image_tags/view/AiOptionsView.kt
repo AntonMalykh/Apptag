@@ -10,6 +10,8 @@ import com.cleverapp.R
 import com.cleverapp.repository.Language
 import kotlinx.android.synthetic.main.ai_options.view.*
 
+private const val MAX_TAGS_AMOUNT = 20
+
 class AiOptionsView @JvmOverloads constructor(
                     context: Context,
                     attrs: AttributeSet? = null,
@@ -22,7 +24,7 @@ class AiOptionsView @JvmOverloads constructor(
             option_language.text = value.localizedName
         }
 
-    var count: Int = 5
+    var amount: Int = 5
         set(value) {
             field = value
             option_count.text = value.toString()
@@ -46,11 +48,11 @@ class AiOptionsView @JvmOverloads constructor(
         }
 
         countMenu = PopupMenu(context, option_count, Gravity.CENTER_VERTICAL)
-        for (order in 1..20) {
+        for (order in 1..MAX_TAGS_AMOUNT) {
             countMenu.menu.add(0, 0, order, order.toString())
         }
         countMenu.setOnMenuItemClickListener { item ->
-            count = item.order
+            amount = item.order
             true
         }
 

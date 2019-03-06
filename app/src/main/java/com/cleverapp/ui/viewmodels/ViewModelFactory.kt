@@ -12,6 +12,7 @@ class ViewModelFactory(
         private val arguments: Bundle?)
     : ViewModelProvider.AndroidViewModelFactory(app){
 
+    @Suppress("UNCHECKED_CAST")
     override fun <T: ViewModel?> create(modelClass: Class<T>): T {
         return when (modelClass){
             ImagesViewModel::class.java -> ImagesViewModel(app) as T

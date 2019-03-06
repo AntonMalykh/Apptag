@@ -6,7 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.Transformations
-import com.cleverapp.repository.data.TaggedImage
+import com.cleverapp.repository.data.Image
 import com.cleverapp.ui.viewmodels.BaseViewModel
 
 private const val PREFERENCE_KEY_SPAN_COUNT = "PREFERENCE_KEY_SPAN_COUNT"
@@ -33,10 +33,10 @@ class ImagesViewModel(app: Application): BaseViewModel(app) {
         repository.getImagesChangedLiveData().removeObserver(imagesChangedObserver)
     }
 
-    fun getImagesLiveData(): LiveData<List<TaggedImage>> = images
+    fun getImagesLiveData(): LiveData<List<Image>> = images
     fun getViewModeLiveData(): LiveData<HistoryViewMode> = viewMode
 
-    fun removeImage(image: TaggedImage) {
+    fun removeImage(image: Image) {
         repository.removeImage(image)
     }
 
@@ -52,8 +52,8 @@ class ImagesViewModel(app: Application): BaseViewModel(app) {
         viewMode.value = toApply
     }
 
-    fun updateImageOrdering(currentUiOrder: List<TaggedImage>) {
-        val changedIndices = ArrayList<TaggedImage>(currentUiOrder.size)
+    fun updateImageOrdering(currentUiOrder: List<Image>) {
+        val changedIndices = ArrayList<Image>(currentUiOrder.size)
         val reverse = currentUiOrder.asReversed()
         for (i in reverse.indices) {
             val image = reverse[i]
@@ -67,7 +67,7 @@ class ImagesViewModel(app: Application): BaseViewModel(app) {
         repository.saveImages(imageUriList)
     }
 
-    fun removeImages(images: List<TaggedImage>) {
+    fun removeImages(images: List<Image>) {
         repository.removeImages(images)
     }
 

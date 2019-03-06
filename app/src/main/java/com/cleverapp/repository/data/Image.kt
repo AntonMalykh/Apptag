@@ -5,10 +5,10 @@ import androidx.room.ColumnInfo.BLOB
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import com.cleverapp.repository.database.AppDatabase.Companion.TAGGED_IMAGES_TABLE_NAME
+import com.cleverapp.repository.database.AppDatabase.Companion.IMAGES_TABLE_NAME
 
-@Entity(tableName = TAGGED_IMAGES_TABLE_NAME)
-data class TaggedImage(
+@Entity(tableName = IMAGES_TABLE_NAME)
+data class Image(
         @PrimaryKey
         @ColumnInfo(name = COLUMN_NAME_ID)
         var id: String,
@@ -36,7 +36,7 @@ data class TaggedImage(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as TaggedImage
+        other as Image
 
         if (id != other.id) return false
         if (!previewBytes.contentEquals(other.previewBytes)) return false

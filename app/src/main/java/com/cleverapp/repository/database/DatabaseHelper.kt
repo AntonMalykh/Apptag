@@ -1,54 +1,54 @@
 package com.cleverapp.repository.database
 
 import com.cleverapp.repository.data.ImageTag
-import com.cleverapp.repository.data.TaggedImage
+import com.cleverapp.repository.data.Image
 
 //TODO use worker thread
 class DatabaseHelper(val database: AppDatabase){
 
-    fun getAllTaggedImages(): List<TaggedImage> {
-        val images = database.taggedImagesDao().getAllTaggedImages()
+    fun getImageWithTags(imageId: String): Image {
+        return database.imagesDao().getImage(imageId)
+                .also {it.tags = getTagsForImage(it.id)}
+    }
+
+    fun getImagesWithTags(): List<Image> {
+        val images = database.imagesDao().getAllImages()
         images.forEach {
-            it.tags = getTags(it.id)
+            it.tags = getTagsForImage(it.id)
         }
         return images
     }
 
-    private fun getTags(imageId: String): List<ImageTag> {
-        return database.taggedImagesDao().getTags(imageId)
+    fun insertImageWithTags(image: Image) {
+        database.imagesDao().insertImage(image)
+        insertImageTags(image.tags)
     }
 
-    fun insertTaggedImage(taggedImage: TaggedImage) {
-        database.taggedImagesDao().insertTaggedImage(taggedImage)
-        insertImageTags(taggedImage.tags)
+    fun updateImages(imagesToUpdate: Collection<Image>) {
+        database.imagesDao().updateImages(imagesToUpdate)
     }
 
-    private fun insertImageTags(imageTags: List<ImageTag>) {
-        database.taggedImagesDao().insertImageTags(imageTags)
+    fun deleteImage(image: Image) {
+        database.imageTagsDao().deleteTags(image.tags)
+        database.imagesDao().deleteImage(image)
     }
 
-    fun deleteSavedImage(image: TaggedImage) {
-        database.taggedImagesDao().deleteImageTags(image.tags)
-        database.taggedImagesDao().deleteSavedImage(image)
+    fun deleteImage(imageId: String) {
+        database.imageTagsDao().deleteTags(getTagsForImage(imageId))
+        database.imagesDao().deleteImage(getImageWithTags(imageId))
     }
 
-    fun deleteSavedImage(imageId: String) {
-        database.taggedImagesDao().deleteImageTags(getTags(imageId))
-        database.taggedImagesDao().deleteSavedImage(getTaggedImage(imageId))
+    private fun getTagsForImage(imageId: String): List<ImageTag> {
+        return database.imageTagsDao().getTags(imageId)
     }
 
-    fun getTaggedImage(imageId: String): TaggedImage {
-        return database.taggedImagesDao().getTaggedImage(imageId)
-                .also {it.tags = getTags(it.id)}
+    private fun insertImageTags(tags: List<ImageTag>) {
+        database.imageTagsDao().insertTags(tags)
     }
 
-    fun updateTaggedImages(imagesToUpdate: Collection<TaggedImage>) {
-        database.taggedImagesDao().updateTaggedImages(imagesToUpdate)
-    }
-
-    fun updateImageTags(imageId: String, tags: List<ImageTag>) {
-        database.taggedImagesDao().deleteImageTags(
-                database.taggedImagesDao().getTags(imageId))
+    fun updateTagsForImage(imageId: String, tags: List<ImageTag>) {
+        database.imageTagsDao().deleteTags(
+                database.imageTagsDao().getTags(imageId))
         insertImageTags(tags)
     }
 }

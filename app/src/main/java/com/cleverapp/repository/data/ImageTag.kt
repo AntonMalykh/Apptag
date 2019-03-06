@@ -7,11 +7,11 @@ import com.cleverapp.repository.database.AppDatabase
         tableName = AppDatabase.IMAGE_TAGS_TABLE_NAME,
         foreignKeys = [
             ForeignKey(
-                    entity = TaggedImage::class,
-                    parentColumns = [TaggedImage.COLUMN_NAME_ID],
+                    entity = Image::class,
+                    parentColumns = [Image.COLUMN_NAME_ID],
                     childColumns = [ImageTag.COLUMN_NAME_IMAGE_ID])
         ],
-        indices = [Index(TaggedImage.COLUMN_NAME_ID)])
+        indices = [Index(Image.COLUMN_NAME_ID)])
 data class ImageTag(
         @ColumnInfo(name = COLUMN_NAME_IMAGE_ID)
         var imageId: String = "",
