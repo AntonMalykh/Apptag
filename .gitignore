@@ -1,8 +1,79 @@
+Skip to content
+ 
+Search or jump to…
+
+Pull requests
+Issues
+Marketplace
+Explore
+ @Anykh Sign out
+384
+2,752 2,746 owncloud/android
+ Code  Issues 275  Pull requests 61  Projects 1  Wiki  Insights
+android/.gitignore
+@davigonz davigonz Update version number, name, min version and remove Jelly Bean workar…
+d42e02a  3 days ago
+@LukeOwlclaw @stoyicker @przybylski @MMMarcy @AndyScherzinger @hannesa2 @davivel @davigonz @theScrabi
+50 lines (38 sloc)  678 Bytes
+    
+# built application files
+*.apk
+*.ap_
+
+# files for the dex VM
+*.dex
+
+# Java class files
+*.class
+
+# generated files
+bin/
+build/
 *.iml
-.gradle
-/local.properties
-/.idea/workspace.xml
-/.idea/libraries
+gen/
+target/
+
+# Local configuration files (sdk path, etc)
+local.properties
+oc_framework/local.properties
+oc_framework-test-project/local.properties
+tests/local.properties
+lint.xml
+
+# Mac .DS_Store files
 .DS_Store
-/build
-/captures
+
+# Proguard README
+proguard-project.txt
+oc_framework/proguard-project.txt
+oc_framework-test-project/proguard-project.txt
+tests/proguard-project.txt
+
+# Android Studio and Gradle specific entries
+.gradle
+.idea
+*.iml
+build
+
+# android sdk captures folder
+captures
+
+!.idea/
+.idea/*
+!.idea/codeStyles/
+
+!Project.xml
+!codeStyleConfig.xml
+
+© 2019 GitHub, Inc.
+Terms
+Privacy
+Security
+Status
+Help
+Contact GitHub
+Pricing
+API
+Training
+Blog
+About
