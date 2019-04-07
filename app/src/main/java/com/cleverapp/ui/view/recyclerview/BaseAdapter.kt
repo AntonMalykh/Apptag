@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.RecyclerView
 abstract class BaseAdapter<Item>: RecyclerView.Adapter<BaseViewHolder<Item>>() {
 
     protected var itemsList: MutableList<Item> = mutableListOf()
-    private val isEmpty: MutableLiveData<Boolean> = MutableLiveData()
     open val itemTouchHelper: ItemTouchHelper? = null
 
     fun setItems(items: List<Item>) {
@@ -20,12 +19,7 @@ abstract class BaseAdapter<Item>: RecyclerView.Adapter<BaseViewHolder<Item>>() {
         return itemsList
     }
 
-    fun getIsEmptyLiveData(): LiveData<Boolean> {
-        return isEmpty
-    }
-
     override fun getItemCount(): Int {
-        isEmpty.value = itemsList.isEmpty()
         return itemsList.size
     }
 
@@ -33,7 +27,7 @@ abstract class BaseAdapter<Item>: RecyclerView.Adapter<BaseViewHolder<Item>>() {
         holder.bindItem(itemsList[position])
     }
 
-    fun appendItems(items: List<Item>){
+    open fun appendItems(items: List<Item>){
         val sizeBefore = itemsList.size
         itemsList.addAll(items)
         notifyItemRangeInserted(sizeBefore, items.size)

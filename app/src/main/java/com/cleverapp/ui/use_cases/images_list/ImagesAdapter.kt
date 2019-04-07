@@ -187,6 +187,7 @@ class ImagesAdapter: BaseAdapter<Image>() {
         private fun onMenuClicked() {
             val menu = PopupMenu(menu.context, menu)
             menu.inflate(R.menu.image_item_menu)
+            menu.menu.findItem(R.id.copy).isVisible = !getItem().tags.isEmpty()
             menu.setOnMenuItemClickListener { menuItem ->
                 return@setOnMenuItemClickListener when {
                     menuItem.itemId == R.id.remove -> {

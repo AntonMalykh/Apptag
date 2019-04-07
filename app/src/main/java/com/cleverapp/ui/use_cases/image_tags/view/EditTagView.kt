@@ -3,6 +3,7 @@ package com.cleverapp.ui.use_cases.image_tags.view
 import android.content.Context
 import android.content.Context.INPUT_METHOD_SERVICE
 import android.content.res.ColorStateList
+import android.graphics.drawable.GradientDrawable
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.AttributeSet
@@ -10,8 +11,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
-import androidx.core.content.ContextCompat.getColor
 import com.cleverapp.R
+import com.cleverapp.utils.getColorByAttr
 import kotlinx.android.synthetic.main.edit_tag_view.view.*
 
 class EditTagView @JvmOverloads constructor(
@@ -38,17 +39,21 @@ class EditTagView @JvmOverloads constructor(
     init{
         LayoutInflater.from(context).inflate(R.layout.edit_tag_view, this, true)
         inputManager = context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-        val stateList = ColorStateList(
+        val colorStateList = ColorStateList(
                 arrayOf(
                         intArrayOf(android.R.attr.state_enabled),
                         intArrayOf(-android.R.attr.state_enabled)
                 ),
                 intArrayOf(
-                        accentColor,
-                        getColor(context, android.R.attr.textColorSecondary)
+                        getColorByAttr(context, R.attr.colorAccent),
+                        getColorByAttr(context, android.R.attr.textColorPrimaryDisableOnly)
                 )
-
         )
+        save_tag.setTextColor(colorStateList)
+        (save_tag.background as GradientDrawable).setStroke(
+                resources.getDimensionPixelSize(R.dimen.stroke_width_default),
+                colorStateList)
+        input.addTextChangedListener(inputWatcher)
     }
 
     override fun setVisibility(visibility: Int) {

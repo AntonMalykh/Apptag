@@ -81,12 +81,10 @@ class ImagesFragment: BaseFragment() {
         images.addItemDecoration(itemDecoration)
 
         imagesAdapter = ImagesAdapter()
-                .also { adapter ->
-                    adapter.setOnMenuClickListener(onMenuClickListener)
-                    adapter.setOnImageClickListener(::onImageClicked)
-                    adapter.setOnImageDoubleClickListener(::onImageDoubleClicked)
-                    adapter.getIsEmptyLiveData()
-                            .observeForever { images.visibility = if (it) INVISIBLE else VISIBLE }
+                .apply {
+                    setOnMenuClickListener(onMenuClickListener)
+                    setOnImageClickListener(::onImageClicked)
+                    setOnImageDoubleClickListener(::onImageDoubleClicked)
                 }
 
         layoutManager = GridLayoutManager(activity, HistoryViewMode.SingleColumn.spanCount)
@@ -255,7 +253,10 @@ class ImagesFragment: BaseFragment() {
     private fun observeViewModel() {
         viewModel.getImagesLiveData().observe(
                 this,
-                Observer { imagesAdapter.setItems(it) })
+                Observer {
+                    imagesAdapter.setItems(it)
+                    images.visibility = if (imagesAdapter.itemCount == 0) INVISIBLE else VISIBLE
+                })
 
         viewModel.getViewModeLiveData().observe(this, Observer { applyViewMode(it) })
     }

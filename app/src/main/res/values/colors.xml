@@ -6,8 +6,7 @@
     <color name="status_bar_color">#E9A701</color>
     <color name="colorError">#BFE93500</color>
     <color name="colorError_transparent">#40E93500</color>
-
+    <color name="text_disabled_color">#a0e1e1e1</color>
 
     <color name="text_on_image_background">#a0e1e1e1</color>
-    <color name="background_transparent">#E6FFFFFF</color>
 </resources>

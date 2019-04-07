@@ -25,13 +25,11 @@ private val ITEM_LOADING = ImageTag("", "", false, 0)
 
 class TagsAdapter(val recyclerView: RecyclerView): BaseAdapter<ImageTag>() {
 
-    private var onEditTagClickedCallback: ((ImageTag) -> Unit)? = null
-
     override val itemTouchHelper: ItemTouchHelper = ItemTouchHelper(TagsTouchCallback())
 
-    fun setOnEditTagClickedCallback(callback: (ImageTag) -> Unit) {
-        onEditTagClickedCallback = callback
-    }
+    private var onEditTagClickedCallback: ((ImageTag) -> Unit)? = null
+    private var onContainsRealTagsCallback: ((Boolean) -> Unit)? = null
+    private var containsRealTags: Boolean? = null
 
     override fun getItemViewType(position: Int): Int {
         return if (position == itemsList.lastIndex
@@ -45,6 +43,11 @@ class TagsAdapter(val recyclerView: RecyclerView): BaseAdapter<ImageTag>() {
         return if (viewType == VIEW_TYPE_LOADING) LoadingViewHolder(parent) else TagViewHolder(parent)
     }
 
+    override fun appendItems(items: List<ImageTag>) {
+        super.appendItems(items)
+        maybeNotifyContainsRealTagsChanged()
+    }
+
     fun updateTag(tag: ImageTag) {
         val position = itemsList.indexOf(tag)
         if (position >= 0)
@@ -53,6 +56,7 @@ class TagsAdapter(val recyclerView: RecyclerView): BaseAdapter<ImageTag>() {
             itemsList.add(0, tag)
             notifyItemInserted(0)
         }
+        maybeNotifyContainsRealTagsChanged()
     }
 
     fun setProgressEnabled(enabled: Boolean) {
@@ -64,6 +68,30 @@ class TagsAdapter(val recyclerView: RecyclerView): BaseAdapter<ImageTag>() {
             else if (!isEmpty() && last() == ITEM_LOADING) {
                 removeAt(lastIndex)
                 notifyItemRemoved(lastIndex + 1)
+            }
+            maybeNotifyContainsRealTagsChanged()
+        }
+    }
+
+    fun setOnEditTagClickedCallback(callback: (ImageTag) -> Unit) {
+        onEditTagClickedCallback = callback
+    }
+
+    fun setOnContainsRealTagsCallback(callback: (Boolean) -> Unit) {
+        onContainsRealTagsCallback = callback
+    }
+
+    fun hasRealTags(): Boolean {
+        return itemsList.size > 0 && itemsList.first() != ITEM_LOADING
+    }
+
+
+    private fun maybeNotifyContainsRealTagsChanged() {
+        onContainsRealTagsCallback?.let {
+            val containsReal = itemsList.size > 0 && itemsList.first() != ITEM_LOADING
+            if (containsReal != containsRealTags) {
+                containsRealTags = containsReal
+                it.invoke(containsReal)
             }
         }
     }
@@ -104,7 +132,6 @@ class TagsAdapter(val recyclerView: RecyclerView): BaseAdapter<ImageTag>() {
 
         override fun bindItem(item: ImageTag) {
             tag.text = item.tag
-            tag.setTextColor(if (item.isCustom) Color.BLUE else Color.GRAY)
             edit.setOnClickListener { onEditTagClickedCallback?.invoke(item) }
         }
     }
@@ -114,6 +141,7 @@ class TagsAdapter(val recyclerView: RecyclerView): BaseAdapter<ImageTag>() {
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
             itemsList.removeAt(viewHolder.adapterPosition)
             notifyItemRemoved(viewHolder.adapterPosition)
+            maybeNotifyContainsRealTagsChanged()
         }
 
         override fun getMovementFlags(recyclerView: RecyclerView,
@@ -144,6 +172,7 @@ class TagsAdapter(val recyclerView: RecyclerView): BaseAdapter<ImageTag>() {
         }
 
         override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
+            super.clearView(recyclerView, viewHolder)
             animateViewHolder(viewHolder, ItemTouchHelper.ACTION_STATE_IDLE)
         }
 

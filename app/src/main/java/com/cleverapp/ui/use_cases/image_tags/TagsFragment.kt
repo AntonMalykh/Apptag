@@ -120,12 +120,12 @@ class TagsFragment : BaseFragment() {
                             (appbar.totalScrollRange - toolbar.height) * (1 + ratio / 4)
                 })
 
-        tagsAdapter = TagsAdapter(tags).also { adapter ->
-            adapter.getIsEmptyLiveData().observeForever {
-                empty.visibility = if (it) VISIBLE else GONE
-                toolbar.menu.findItem(R.id.copy_tags).isVisible = !it
+        tagsAdapter = TagsAdapter(tags).apply {
+            setOnEditTagClickedCallback { imageTag -> startEditTag(imageTag) }
+            setOnContainsRealTagsCallback {
+                empty.visibility = if (!it) VISIBLE else GONE
+                toolbar.menu.findItem(R.id.copy_tags).isVisible = it
             }
-            adapter.setOnEditTagClickedCallback { imageTag -> startEditTag(imageTag) }
         }
 
         tags.adapter = tagsAdapter

@@ -7,7 +7,7 @@
 
     <stroke
         android:color="@color/colorAccent"
-        android:width="8px"/>
+        android:width="@dimen/stroke_width_default"/>
 
     <padding
         android:top="@dimen/offset_small"

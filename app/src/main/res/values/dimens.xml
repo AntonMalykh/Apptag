@@ -10,4 +10,5 @@
     <dimen name="tags_appbar_scrim_threshold">96dp</dimen>
     <dimen name="icon_large_size">32dp</dimen>
     <dimen name="tag_input_min_width">104dp</dimen>
+    <dimen name="stroke_width_default">4dp</dimen>
 </resources>
