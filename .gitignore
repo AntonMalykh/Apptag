@@ -34,9 +34,6 @@ tests/proguard-project.txt
 # Android Studio and Gradle specific entries
 .gradle
 .idea
-*.iml
-build
-
 # android sdk captures folder
 captures
 
