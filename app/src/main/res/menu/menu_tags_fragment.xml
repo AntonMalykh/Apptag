@@ -25,7 +25,7 @@
     <item
         android:id="@+id/done"
         android:icon="@drawable/ic_done_white"
-        android:title="@string/done"
+        android:title="@string/save"
         app:showAsAction="always"/>
 
 </menu>

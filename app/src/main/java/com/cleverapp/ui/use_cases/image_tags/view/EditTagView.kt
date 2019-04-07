@@ -2,11 +2,15 @@ package com.cleverapp.ui.use_cases.image_tags.view
 
 import android.content.Context
 import android.content.Context.INPUT_METHOD_SERVICE
+import android.content.res.ColorStateList
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
+import androidx.core.content.ContextCompat.getColor
 import com.cleverapp.R
 import kotlinx.android.synthetic.main.edit_tag_view.view.*
 
@@ -18,9 +22,33 @@ class EditTagView @JvmOverloads constructor(
 
     private val inputManager: InputMethodManager
 
+    private val inputWatcher = object : TextWatcher {
+        override fun afterTextChanged(s: Editable?) {
+        }
+
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+        }
+
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            save_tag.isEnabled = !s.isNullOrBlank()
+        }
+
+    }
+
     init{
         LayoutInflater.from(context).inflate(R.layout.edit_tag_view, this, true)
         inputManager = context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        val stateList = ColorStateList(
+                arrayOf(
+                        intArrayOf(android.R.attr.state_enabled),
+                        intArrayOf(-android.R.attr.state_enabled)
+                ),
+                intArrayOf(
+                        accentColor,
+                        getColor(context, android.R.attr.textColorSecondary)
+                )
+
+        )
     }
 
     override fun setVisibility(visibility: Int) {
@@ -42,6 +70,6 @@ class EditTagView @JvmOverloads constructor(
     }
 
     fun getInput(): String {
-        return input.text.toString()
+        return input.text.toString().trim()
     }
 }

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Apptag</string>
+
+    <string name="image_chooser_title">Выберите изображение</string>
+    <string name="remove">Удалить</string>
+    <string name="copy_tags">Копировать теги</string>
+    <string name="cancel">Отменить</string>
+    <string name="save">Сохранить</string>
+    <string name="empty">Пусто</string>
+    <string name="add">Добавить</string>
+    <string name="image_saved">Изображение сохранено на устройстве</string>
+    <string name="tags_were_copied_message">Теги скопированы</string>
+    <string name="find_tags">Найти теги</string>
+</resources>
