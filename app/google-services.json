@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "429427645659",
+    "firebase_url": "https://apptag-4a572.firebaseio.com",
+    "project_id": "apptag-4a572",
+    "storage_bucket": "apptag-4a572.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:429427645659:android:87bc96f781bd9e52",
+        "android_client_info": {
+          "package_name": "com.cleverapp.apptag"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "429427645659-s6k1djffuckh47g4kkkos9gc81ob6ubc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCX7abr8_aVSxSg0NXhOc0CwHandgyBdGw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "429427645659-s6k1djffuckh47g4kkkos9gc81ob6ubc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

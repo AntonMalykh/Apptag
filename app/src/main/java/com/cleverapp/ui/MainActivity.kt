@@ -8,6 +8,8 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHost
 import androidx.navigation.fragment.NavHostFragment
 import com.cleverapp.R
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
 
 class MainActivity : AppCompatActivity(), NavHost {
 
@@ -16,6 +18,7 @@ class MainActivity : AppCompatActivity(), NavHost {
                 as NavHostFragment)
                 .navController
     }
+    private lateinit var adView: AdView
 
     override fun getNavController() = navigationController
 
@@ -28,6 +31,29 @@ class MainActivity : AppCompatActivity(), NavHost {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        adView = findViewById(R.id.adView)
+
+        adView.loadAd(
+                AdRequest
+                        .Builder()
+                        .build()
+        )
+    }
+
+    override fun onResume() {
+        super.onResume()
+        adView.resume()
+    }
+
+    override fun onPause() {
+        adView.pause()
+        super.onPause()
+    }
+
+    override fun onDestroy() {
+        adView.destroy()
+        super.onDestroy()
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {

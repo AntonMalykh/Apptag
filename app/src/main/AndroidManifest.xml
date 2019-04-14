@@ -17,6 +17,11 @@
         android:allowBackup="false"
         android:supportsRtl="true">
 
+        <!-- ADMOB -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-9615047137802586~3088714808"/>
+
         <activity android:name=".ui.MainActivity"
             android:theme="@style/AppTheme"
             android:screenOrientation="portrait"
@@ -27,6 +32,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
 
 </manifest>
