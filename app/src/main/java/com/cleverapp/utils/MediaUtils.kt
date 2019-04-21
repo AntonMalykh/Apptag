@@ -58,7 +58,7 @@ fun compressImage(originalImageStream: InputStream, desiredImgSize: Int, rotatio
 
 
     val START_QUALITY = 80
-    val QUALITY_CHANGE_STEP = 10
+    var QUALITY_CHANGE_STEP = 10
 
     var compressedSize: Int
     var quality = START_QUALITY
@@ -69,9 +69,11 @@ fun compressImage(originalImageStream: InputStream, desiredImgSize: Int, rotatio
 
         originalResized.compress(Bitmap.CompressFormat.JPEG, quality, compressed)
         compressedSize = compressed.size()
+        if (quality <= QUALITY_CHANGE_STEP)
+            QUALITY_CHANGE_STEP /= 2
         quality -= QUALITY_CHANGE_STEP
     }
-    while (compressedSize > desiredImgSize && quality > QUALITY_CHANGE_STEP)
+    while (compressedSize > desiredImgSize && quality > 0)
 
     originalResized.recycle()
     return compressed.toByteArray()
