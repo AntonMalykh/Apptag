@@ -1,12 +1,15 @@
 package com.cleverapp.ui
 
+import android.os.Build
 import android.os.Bundle
 import android.view.MotionEvent
+import android.view.View.GONE
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.NavHost
 import androidx.navigation.fragment.NavHostFragment
+import com.cleverapp.BuildConfig
 import com.cleverapp.R
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
@@ -34,11 +37,15 @@ class MainActivity : AppCompatActivity(), NavHost {
 
         adView = findViewById(R.id.adView)
 
-        adView.loadAd(
-                AdRequest
-                        .Builder()
-                        .build()
-        )
+        if (!"adFree".equals(BuildConfig.FLAVOR)) {
+            adView.loadAd(
+                    AdRequest
+                            .Builder()
+                            .build()
+            )
+        }
+        else
+            adView.visibility = GONE
     }
 
     override fun onResume() {
